@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-import PortfolioForm from './PortfolioForm';
-import PortfolioChart from './PortfolioChart';
-import './ETFBacktest.css';
+import React, { useState, useEffect, useCallback } from "react";
+import axios from "axios";
+import PortfolioForm from "./PortfolioForm";
+import PortfolioChart from "./PortfolioChart";
+//import './ETFBacktest.css';
 
 function ETFBacktest() {
   const [result, setResult] = useState(null);
@@ -21,28 +21,34 @@ function ETFBacktest() {
 
     try {
       for (const etf of portfolio) {
-        const response = await axios.get('https://alpha-vantage.p.rapidapi.com/query', {
-          params: {
-            function: 'TIME_SERIES_DAILY_ADJUSTED',
-            symbol: etf.symbol,
-            outputsize: 'full', // 'full' 설정으로 모든 데이터 가져오기
-          },
-          headers: {
-            'X-RapidAPI-Key': process.env.REACT_APP_RAPIDAPI_KEY,
-            'X-RapidAPI-Host': process.env.REACT_APP_RAPIDAPI_HOST,
-          },
-        });
+        const response = await axios.get(
+          "https://alpha-vantage.p.rapidapi.com/query",
+          {
+            params: {
+              function: "TIME_SERIES_DAILY_ADJUSTED",
+              symbol: etf.symbol,
+              outputsize: "full", // 'full' 설정으로 모든 데이터 가져오기
+            },
+            headers: {
+              "X-RapidAPI-Key": process.env.REACT_APP_RAPIDAPI_KEY,
+              "X-RapidAPI-Host": process.env.REACT_APP_RAPIDAPI_HOST,
+            },
+          }
+        );
 
-        const priceData = response.data['Time Series (Daily)'];
+        const priceData = response.data["Time Series (Daily)"];
         if (!priceData) {
           console.error(`No price data available for ${etf.symbol}.`);
           continue;
         }
 
-        const dates = Object.keys(priceData).sort((a, b) => new Date(a) - new Date(b));
+        const dates = Object.keys(priceData).sort(
+          (a, b) => new Date(a) - new Date(b)
+        );
         const getClosestDate = (targetDate) => {
           return dates.reduce((prev, curr) =>
-            Math.abs(new Date(curr) - new Date(targetDate)) < Math.abs(new Date(prev) - new Date(targetDate))
+            Math.abs(new Date(curr) - new Date(targetDate)) <
+            Math.abs(new Date(prev) - new Date(targetDate))
               ? curr
               : prev
           );
@@ -52,12 +58,14 @@ function ETFBacktest() {
         const end = getClosestDate(endDate);
 
         if (!start || !end) {
-          console.warn(`Couldn't find suitable start or end date for ${etf.symbol}.`);
+          console.warn(
+            `Couldn't find suitable start or end date for ${etf.symbol}.`
+          );
           continue;
         }
 
-        const startPrice = parseFloat(priceData[start]?.['5. adjusted close']);
-        const endPrice = parseFloat(priceData[end]?.['5. adjusted close']);
+        const startPrice = parseFloat(priceData[start]?.["5. adjusted close"]);
+        const endPrice = parseFloat(priceData[end]?.["5. adjusted close"]);
 
         if (isNaN(startPrice) || isNaN(endPrice)) {
           console.warn(`Invalid start or end price for ${etf.symbol}.`);
@@ -97,7 +105,8 @@ function ETFBacktest() {
       cumulativeFinalAmount += etfFinalAmount;
     });
 
-    const totalReturn = ((cumulativeFinalAmount - initialAmount) / initialAmount) * 100;
+    const totalReturn =
+      ((cumulativeFinalAmount - initialAmount) / initialAmount) * 100;
     const dates = [result.startDate, result.endDate];
     const values = [initialAmount, cumulativeFinalAmount];
 
@@ -130,11 +139,14 @@ function ETFBacktest() {
           <ul>
             {result.portfolioData.map((etf, index) => (
               <li key={index}>
-                {etf.symbol}: 수익률 {etf.returns.toFixed(2)}%, 비율 {etf.allocation}%
+                {etf.symbol}: 수익률 {etf.returns.toFixed(2)}%, 비율{" "}
+                {etf.allocation}%
               </li>
             ))}
           </ul>
-          <PortfolioChart data={{ dates: result.dates, values: result.values }} />
+          <PortfolioChart
+            data={{ dates: result.dates, values: result.values }}
+          />
         </div>
       )}
     </div>
