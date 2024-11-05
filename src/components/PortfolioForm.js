@@ -3,11 +3,11 @@ import styles from "./PortfolioForm.module.css";
 
 //이부분 동적으로 처리할 거임 -> 심볼에 해당하는 etf이름 가져와서 여기에 추가
 const etfNames = {
-  {/** 이 데이터 들은 예시
+  /** 이 데이터 들은 예시
   SPY: "S&P 500 ETF",
   QQQ: "Nasdaq 100 ETF",
   DIA: "Dow Jones ETF",
-  */}
+  */
 };
 
 function PortfolioForm({ onSubmit }) {
