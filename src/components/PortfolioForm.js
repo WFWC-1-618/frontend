@@ -51,7 +51,7 @@ function PortfolioForm({ onSubmit }) {
 
   return (
     <form onSubmit={handleSubmit} className={styles.formContainer}>
-      <h2 className={styles.title}>포트폴리오 구성</h2>
+      <h2 className={styles.maintitle}>포트폴리오 구성</h2>
       {portfolio.map((etf, index) => (
         <div key={index} className={styles.inputContainer}>
           <input

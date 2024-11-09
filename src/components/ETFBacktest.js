@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import PortfolioForm from "./PortfolioForm";
 import PortfolioChart from "./PortfolioChart";
+import styles from "./ETFBacktest.module.css";
 //import './ETFBacktest.css';
 
 function ETFBacktest() {
@@ -127,7 +128,7 @@ function ETFBacktest() {
 
   return (
     <div className="etf-backtest">
-      <h1>ETF 백테스팅 애플리케이션</h1>
+      <h1 className={styles.maintitle}>ETF 백테스팅 애플리케이션</h1>
       <PortfolioForm onSubmit={handleFormSubmit} />
       {loading && <p className="loading">로딩 중...</p>}
       {result && result.totalReturn !== undefined && (
