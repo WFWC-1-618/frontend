@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import PortfolioPopup from "./PortfolioPopup"; // 모달 컴포넌트 임포트
-import "./PortfolioForm.module.css"; // 일반 CSS 사용
+import styles from "./PortfolioForm.module.css"; // 일반 CSS 사용
 
 const etfNames = {
   SPY: "S&P 500 ETF",
@@ -44,13 +44,13 @@ function PortfolioForm({ onSubmit }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="formContainer">
-      <h2 className="maintitle">포트폴리오 구성</h2>
+    <form onSubmit={handleSubmit} className={styles.formContainer}>
+      <h2 className={styles.maintitle}>포트폴리오 구성</h2>
 
-      <h3 className="title">나의 포트폴리오</h3>
-      <div className="tableContainer">
+      <h3 className={styles.title}>나의 포트폴리오</h3>
+      <div className={styles.tableContainer}>
         {displayPortfolio.length > 0 ? (
-          <table className="table">
+          <table className={styles.table}>
             <thead>
               <tr>
                 <th>ETF 심볼</th>
@@ -73,7 +73,7 @@ function PortfolioForm({ onSubmit }) {
         )}
       </div>
 
-      <button type="button" onClick={openModal} className="button">
+      <button type="button" onClick={openModal} className={styles.button}>
         포트폴리오 수정
       </button>
 
@@ -83,53 +83,53 @@ function PortfolioForm({ onSubmit }) {
         onClose={closeModal}
       />
 
-      <hr className="hr" />
+      <hr className={styles.hr} />
 
-      <h2 className="title">투자 설정</h2>
-      <label className="label">
+      <h2 className={styles.title}>투자 설정</h2>
+      <label className={styles.label}>
         시작 금액:
         <input
           type="number"
           value={initialAmount}
           onChange={(e) => setInitialAmount(e.target.value)}
-          className="inputField"
+          className={styles.inputField}
         />
       </label>
 
-      <label className="label">
+      <label className={styles.label}>
         월 적립 금액:
         <input
           type="number"
           value={monthlyContribution}
           onChange={(e) => setMonthlyContribution(e.target.value)}
-          className="inputField"
+          className={styles.inputField}
         />
       </label>
 
-      <label className="label">
+      <label className={styles.label}>
         시작 날짜:
         <input
           type="date"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
-          className="inputField"
+          className={styles.inputField}
         />
       </label>
 
-      <label className="label">
+      <label className={styles.label}>
         종료 날짜:
         <input
           type="date"
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
-          className="inputField"
+          className={styles.inputField}
         />
       </label>
 
-      <button type="submit" className="button">
+      <button type="submit" className={styles.button}>
         백테스트 실행
       </button>
-      <hr className="hr" />
+      <hr className={styles.hr} />
     </form>
   );
 }
