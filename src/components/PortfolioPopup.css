@@ -1,0 +1,123 @@
+/* 전체 팝업 컨테이너 스타일 */
+
+/* 모달 배경 (오버레이) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* 반투명 배경 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* 모달 콘텐츠 */
+.modal-content {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+}
+.popupContainer {
+  background-color: #ffffff; /* 흰색 배경 */
+  padding: 20px;
+  width: 100%;
+  max-width: 400px; /* 팝업 최대 너비 */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 부드러운 그림자 */
+  font-family: Arial, sans-serif;
+}
+
+/* 제목 스타일 */
+.popupContainer h2 {
+  margin-bottom: 20px;
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+  color: #333333;
+}
+
+/* 입력 컨테이너 스타일 */
+.inputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+/* 입력 필드 스타일 */
+.inputField {
+  padding: 10px;
+  border: 1px solid #cccccc;
+  border-radius: 5px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.inputField:focus {
+  border-color: #007bff; /* 포커스 시 파란색 테두리 */
+}
+
+/* 테이블 스타일 */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 10px;
+  border: 1px solid #dddddd;
+}
+
+.table th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.table td {
+  background-color: #ffffff;
+}
+
+/* 버튼 컨테이너 스타일 */
+.buttonContainer {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+/* 버튼 스타일 */
+.button {
+  padding: 10px 15px;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #007bff; /* 기본 버튼 색상 */
+  color: #ffffff;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #0056b3; /* 버튼 호버 색상 */
+}
+
+.button:active {
+  background-color: #004085; /* 버튼 클릭 시 색상 */
+}
+
+/* 빈 상태 메시지 스타일 */
+.popupContainer p {
+  text-align: center;
+  color: #777777;
+  font-size: 14px;
+  margin-top: 20px;
+}

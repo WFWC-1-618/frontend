@@ -1,41 +1,35 @@
 import React, { useState } from "react";
-import styles from "./PortfolioForm.module.css";
+import PortfolioPopup from "./PortfolioPopup"; // 모달 컴포넌트 임포트
+import styles from "./PortfolioForm.module.css"; // 일반 CSS 사용
 
-//이부분 동적으로 처리할 거임 -> 심볼에 해당하는 etf이름 가져와서 여기에 추가
 const etfNames = {
-  /** 이 데이터 들은 예시
   SPY: "S&P 500 ETF",
   QQQ: "Nasdaq 100 ETF",
   DIA: "Dow Jones ETF",
-  */
 };
 
 function PortfolioForm({ onSubmit }) {
-  const [portfolio, setPortfolio] = useState([{ symbol: "", allocation: "" }]);
   const [displayPortfolio, setDisplayPortfolio] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [initialAmount, setInitialAmount] = useState(1000000);
   const [monthlyContribution, setMonthlyContribution] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 추가
 
-  const addETF = () => {
-    // 현재 입력된 symbol과 allocation 값을 displayPortfolio에 추가
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+  const handleSave = (popupPortfolio) => {
     if (
-      portfolio.length > 0 &&
-      portfolio[0].symbol &&
-      portfolio[0].allocation
+      !popupPortfolio ||
+      !Array.isArray(popupPortfolio) ||
+      popupPortfolio.length === 0
     ) {
-      setDisplayPortfolio([...displayPortfolio, portfolio[0]]);
-      setPortfolio([{ symbol: "", allocation: "" }]); // 입력 필드 초기화
-    } else {
-      console.error("ETF symbol 또는 allocation 값이 없습니다.");
+      alert("유효한 ETF 데이터를 전달받지 못했습니다.");
+      return;
     }
-  };
-
-  const handlePortfolioChange = (index, field, value) => {
-    const updatedPortfolio = [...portfolio];
-    updatedPortfolio[index][field] = value;
-    setPortfolio(updatedPortfolio);
+    setDisplayPortfolio([...popupPortfolio]); // 포트폴리오 업데이트
+    closeModal(); // 모달 닫기
   };
 
   const handleSubmit = (e) => {
@@ -52,31 +46,6 @@ function PortfolioForm({ onSubmit }) {
   return (
     <form onSubmit={handleSubmit} className={styles.formContainer}>
       <h2 className={styles.maintitle}>포트폴리오 구성</h2>
-      {portfolio.map((etf, index) => (
-        <div key={index} className={styles.inputContainer}>
-          <input
-            type="text"
-            placeholder="ETF 심볼"
-            value={etf.symbol}
-            onChange={(e) =>
-              handlePortfolioChange(index, "symbol", e.target.value)
-            }
-            className={styles.inputField}
-          />
-          <input
-            type="number"
-            placeholder="비율 (%)"
-            value={etf.allocation}
-            onChange={(e) =>
-              handlePortfolioChange(index, "allocation", e.target.value)
-            }
-            className={styles.inputField}
-          />
-        </div>
-      ))}
-      <button type="button" onClick={addETF} className={styles.button}>
-        ETF 추가
-      </button>
 
       <h3 className={styles.title}>나의 포트폴리오</h3>
       <div className={styles.tableContainer}>
@@ -100,9 +69,19 @@ function PortfolioForm({ onSubmit }) {
             </tbody>
           </table>
         ) : (
-          <p>추가된 ETF가 없습니다.</p>
+          <p>포트폴리오가 존재하지 않습니다.</p>
         )}
       </div>
+
+      <button type="button" onClick={openModal} className={styles.button}>
+        포트폴리오 수정
+      </button>
+
+      <PortfolioPopup
+        isOpen={isModalOpen}
+        onSave={handleSave}
+        onClose={closeModal}
+      />
 
       <hr className={styles.hr} />
 

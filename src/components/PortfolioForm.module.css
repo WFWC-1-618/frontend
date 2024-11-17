@@ -1,71 +1,105 @@
-/* PortfolioForm.module.css */
+/* 전체 폼 컨테이너 스타일 */
 .formContainer {
   max-width: 600px;
-  margin: auto;
+  margin: 20px auto; /* 중앙 정렬 */
   padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: #f9f9f9; /* 밝은 배경색 */
+  border-radius: 8px; /* 둥근 모서리 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 그림자 */
 }
 
+/* 제목 스타일 */
 .title {
-  text-align: center;
-  color: #333;
-  font-size: 1.5em;
+  text-align: center; /* 중앙 정렬 */
+  color: #333; /* 진한 회색 */
+  font-size: 1.5em; /* 적절한 크기 */
   margin-bottom: 20px;
 }
 
+/* 입력 컨테이너 */
 .inputContainer {
   display: flex;
-  gap: 10px;
+  gap: 10px; /* 입력 필드 간격 */
   margin-bottom: 10px;
 }
 
+/* 입력 필드 스타일 */
 .inputField {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 8px; /* 내부 여백 */
+  border: 1px solid #ccc; /* 회색 테두리 */
+  border-radius: 4px; /* 둥근 모서리 */
   width: 100%;
+  font-size: 14px;
 }
 
+.inputField:focus {
+  border-color: #007bff; /* 포커스 시 파란색 강조 */
+  outline: none; /* 기본 포커스 스타일 제거 */
+}
+
+/* 버튼 스타일 */
 .button {
   padding: 10px;
-  background-color: #007bff;
-  color: #fff;
+  background-color: #007bff; /* 파란색 배경 */
+  color: #fff; /* 흰색 글자 */
   border: none;
-  border-radius: 4px;
+  border-radius: 4px; /* 둥근 모서리 */
   cursor: pointer;
   margin-top: 10px;
-  display: block;
+  text-align: center;
+  display: inline-block; /* 크기 조정 */
 }
 
 .button:hover {
-  background-color: #0056b3;
+  background-color: #0056b3; /* 호버 시 더 진한 파란색 */
 }
 
+.button:active {
+  background-color: #004085; /* 클릭 시 색상 */
+}
+
+/* 테이블 컨테이너 */
 .tableContainer {
   margin-top: 20px;
   text-align: center;
+  overflow-x: auto; /* 가로 스크롤 허용 */
 }
 
+/* 테이블 스타일 */
 .table {
   width: 100%;
   margin: auto;
-  border-collapse: collapse;
+  border-collapse: collapse; /* 테두리 중복 제거 */
 }
 
 .table th,
 .table td {
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid #ccc; /* 회색 테두리 */
   text-align: center;
+  font-size: 14px;
 }
 
+.table th {
+  background-color: #f5f5f5; /* 밝은 배경 */
+  font-weight: bold; /* 강조 */
+}
+
+.table td {
+  background-color: #ffffff; /* 흰색 배경 */
+}
+
+/* 레이블 스타일 */
 .label {
   display: block;
+  font-size: 14px; /* 작은 크기 */
+  color: #555; /* 중간 회색 */
   margin-top: 10px;
 }
 
+/* 수평선 스타일 */
 .hr {
   margin: 20px 0;
+  border: none;
+  border-top: 1px solid #ccc; /* 회색 선 */
 }
