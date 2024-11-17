@@ -25,6 +25,30 @@ function ETFBacktest() {
     return etfFinalAmount;
   };
 
+  const handleDownloadCSV = () => {
+    if (!result || portfolioData.length === 0) return;
+  
+    const csvHeader = "\uFEFFETF 심볼,비율 (%),수익률 (%),초기 금액,최종 금액\n"; // UTF-8 BOM 추가
+    const csvContent = portfolioData
+      .map((etf) => {
+        const initialInvestment = (result.initialAmount * etf.allocation) / 100;
+        const finalAmount = initialInvestment * (1 + etf.returns / 100);
+        return `${etf.symbol},${etf.allocation},${etf.returns.toFixed(
+          2
+        )},${initialInvestment.toFixed(2)},${finalAmount.toFixed(2)}`;
+      })
+      .join("\n");
+  
+    const blob = new Blob([csvHeader + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "ETF_Backtest_Results.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };  
+
   // 폼 제출 핸들러
   const handleFormSubmit = async ({
     portfolio,
@@ -164,6 +188,9 @@ function ETFBacktest() {
           <p>총 수익률: {result.totalReturn.toFixed(2)}%</p>
           <p>최종 금액: {result.finalAmount.toLocaleString()}원</p>
           <p>누적 투자 금액: {result.cumulativeInvestment.toLocaleString()}원</p>
+          <button onClick={handleDownloadCSV} className={styles.button}>
+            결과 다운로드 (CSV)
+          </button>
           <ETFTable portfolioData={portfolioData} />
           <PortfolioChart data={{ dates: result.dates, values: result.values }} />
         </div>
