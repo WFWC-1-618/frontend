@@ -1,12 +1,6 @@
 import React, { useState } from "react";
-import PortfolioPopup from "./PortfolioPopup"; // 모달 컴포넌트 임포트
-import styles from "./PortfolioForm.module.css"; // 일반 CSS 사용
-
-const etfNames = {
-  SPY: "S&P 500 ETF",
-  QQQ: "Nasdaq 100 ETF",
-  DIA: "Dow Jones ETF",
-};
+import PortfolioPopup from "./PortfolioPopup";
+import styles from "./PortfolioForm.module.css";
 
 function PortfolioForm({ onSubmit }) {
   const [displayPortfolio, setDisplayPortfolio] = useState([]);
@@ -14,7 +8,7 @@ function PortfolioForm({ onSubmit }) {
   const [endDate, setEndDate] = useState("");
   const [initialAmount, setInitialAmount] = useState(1000000);
   const [monthlyContribution, setMonthlyContribution] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 추가
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -28,12 +22,30 @@ function PortfolioForm({ onSubmit }) {
       alert("유효한 ETF 데이터를 전달받지 못했습니다.");
       return;
     }
-    setDisplayPortfolio([...popupPortfolio]); // 포트폴리오 업데이트
-    closeModal(); // 모달 닫기
+    setDisplayPortfolio([...popupPortfolio]);
+    closeModal();
   };
+
+  const isFormValid = () => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return (
+      displayPortfolio.length > 0 &&
+      startDate &&
+      endDate &&
+      start < end &&
+      initialAmount > 0 &&
+      monthlyContribution >= 0
+    );
+  };
+  
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!isFormValid()) {
+      alert("입력값을 확인하세요.");
+      return;
+    }
     onSubmit({
       portfolio: displayPortfolio,
       startDate,
@@ -54,7 +66,6 @@ function PortfolioForm({ onSubmit }) {
             <thead>
               <tr>
                 <th>ETF 심볼</th>
-                <th>ETF 전체 이름</th>
                 <th>비율 (%)</th>
               </tr>
             </thead>
@@ -62,7 +73,6 @@ function PortfolioForm({ onSubmit }) {
               {displayPortfolio.map((etf, index) => (
                 <tr key={index}>
                   <td>{etf.symbol}</td>
-                  <td>{etfNames[etf.symbol] || "알 수 없음"}</td>
                   <td>{etf.allocation}</td>
                 </tr>
               ))}
@@ -126,10 +136,13 @@ function PortfolioForm({ onSubmit }) {
         />
       </label>
 
-      <button type="submit" className={styles.button}>
+      <button
+        type="submit"
+        className={styles.button}
+        disabled={!isFormValid()}
+      >
         백테스트 실행
       </button>
-      <hr className={styles.hr} />
     </form>
   );
 }

@@ -10,10 +10,17 @@ function PortfolioChart({ data }) {
     labels: data.dates,
     datasets: [
       {
-        label: '포트폴리오 가치',
+        label: "평가 금액",
         data: data.values,
         fill: false,
-        borderColor: 'rgb(75, 192, 192)',
+        borderColor: "rgb(75, 192, 192)",
+        tension: 0.1,
+      },
+      {
+        label: "누적 투자 금액",
+        data: data.cumulativeInvestment, // 누적 투자 금액
+        fill: false,
+        borderColor: "rgb(255, 99, 132)",
         tension: 0.1,
       },
     ],
@@ -22,19 +29,19 @@ function PortfolioChart({ data }) {
   const options = {
     scales: {
       x: {
-        type: 'time',
+        type: "time",
         time: {
-          unit: 'month', // x축을 월 단위로 설정
+          unit: "month",
         },
         title: {
           display: true,
-          text: '날짜',
+          text: "날짜",
         },
       },
       y: {
         title: {
           display: true,
-          text: '금액 (원)',
+          text: "금액 (원)",
         },
       },
     },
