@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import PortfolioPopup from "./PortfolioPopup";
 import styles from "./PortfolioForm.module.css";
+import DonutChart from "./DonutChart"; // (1) 새로운 도넛 차트 컴포넌트 추가
 
 function PortfolioForm({ onSubmit }) {
   const [displayPortfolio, setDisplayPortfolio] = useState([]);
@@ -38,7 +39,6 @@ function PortfolioForm({ onSubmit }) {
       monthlyContribution >= 0
     );
   };
-  
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -60,27 +60,37 @@ function PortfolioForm({ onSubmit }) {
       <h2 className={styles.maintitle}>포트폴리오 구성</h2>
 
       <h3 className={styles.title}>나의 포트폴리오</h3>
-      <div className={styles.tableContainer}>
-        {displayPortfolio.length > 0 ? (
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>ETF 심볼</th>
-                <th>비율 (%)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {displayPortfolio.map((etf, index) => (
-                <tr key={index}>
-                  <td>{etf.symbol}</td>
-                  <td>{etf.allocation}</td>
+
+      {/* (2) 테이블과 차트를 나란히 배치하기 위해 flex 컨테이너 추가 */}
+      <div className={styles.flexContainer}>
+        {/* (3) 기존의 테이블 부분 */}
+        <div className={styles.tableContainer}>
+          {displayPortfolio.length > 0 ? (
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>ETF 심볼</th>
+                  <th>비율 (%)</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p>포트폴리오가 존재하지 않습니다.</p>
-        )}
+              </thead>
+              <tbody>
+                {displayPortfolio.map((etf, index) => (
+                  <tr key={index}>
+                    <td>{etf.symbol}</td>
+                    <td>{etf.allocation}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p>포트폴리오가 존재하지 않습니다.</p>
+          )}
+        </div>
+
+        {/* (4) 새로 추가된 도넛 차트 */}
+        <div className={styles.chartContainer}>
+          <DonutChart portfolioData={displayPortfolio} />
+        </div>
       </div>
 
       <button type="button" onClick={openModal} className={styles.button}>
