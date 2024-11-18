@@ -103,3 +103,21 @@
   border: none;
   border-top: 1px solid #ccc; /* 회색 선 */
 }
+
+.flexContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px; /* 표와 차트 사이 간격 */
+}
+
+.tableContainer {
+  flex: 1; /* 테이블이 차트보다 넓게 표시되도록 설정 */
+}
+
+.chartContainer {
+  flex: 1; /* 차트가 테이블과 같은 높이를 유지 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
