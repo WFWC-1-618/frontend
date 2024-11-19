@@ -1,3 +1,111 @@
+/* ETFBacktest.module.css */
+
+/* 전체 컨테이너 스타일 */
+.etf-backtest {
+  max-width: 800px;
+  margin: 0 auto; /* 중앙 정렬 */
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9; /* 밝은 배경 */
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* 부드러운 그림자 */
+}
+
+/* 메인 타이틀 스타일 */
 .maintitle {
   text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 20px;
+}
+
+/* 로딩 메시지 스타일 */
+.loading {
+  text-align: center;
+  color: #007bff; /* 파란색 강조 */
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+/* 에러 메시지 스타일 */
+.error {
+  text-align: center;
+  color: #d9534f; /* 빨간색 강조 */
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+/* 결과 섹션 스타일 */
+.results {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 그림자 */
+}
+
+.results h2 {
+  text-align: center;
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: #333333;
+}
+
+.results p {
+  font-size: 1rem;
+  margin: 5px 0;
+  color: #555555; /* 중간 회색 */
+  text-align: center;
+}
+
+/* 버튼 스타일 */
+.button {
+  display: block;
+  margin: 20px auto 0; /* 가운데 정렬 */
+  padding: 10px 20px;
+  font-size: 1rem;
+  color: #ffffff;
+  background-color: #007bff; /* 파란색 배경 */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #0056b3; /* 호버 시 더 진한 파란색 */
+}
+
+.button:active {
+  background-color: #004085; /* 클릭 시 색상 */
+}
+
+/* 테이블 스타일 */
+.table {
+  width: 100%;
+  margin: 20px 0;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 10px;
+  border: 1px solid #dddddd;
+  text-align: center;
+}
+
+.table th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.table td {
+  background-color: #ffffff;
+}
+
+/* 차트 스타일 */
+.chart {
+  margin-top: 20px;
 }
