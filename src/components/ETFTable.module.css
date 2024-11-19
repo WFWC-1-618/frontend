@@ -1,0 +1,54 @@
+/* ETFTable.module.css */
+
+/* 테이블 스타일 */
+table {
+  width: 100%;
+  border-collapse: collapse; /* 중복 테두리 제거 */
+  margin: 20px 0;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  text-align: center; /* 텍스트 중앙 정렬 */
+}
+
+/* 테이블 헤더 스타일 */
+thead th {
+  background-color: #f5f5f5; /* 헤더 배경색 */
+  color: #333333; /* 헤더 텍스트 색상 */
+  font-weight: bold;
+  padding: 10px;
+  border: 1px solid #dddddd; /* 테두리 */
+}
+
+/* 테이블 본문 스타일 */
+tbody tr {
+  background-color: #ffffff; /* 기본 배경색 */
+  border-bottom: 1px solid #dddddd;
+  transition: background-color 0.3s ease; /* 호버 효과 */
+}
+
+tbody tr:hover {
+  background-color: #f9f9f9; /* 호버 시 배경색 */
+}
+
+tbody td {
+  padding: 10px;
+  border: 1px solid #dddddd; /* 셀 테두리 */
+  color: #555555; /* 텍스트 색상 */
+}
+
+/* 숫자 스타일 (금액 및 비율) */
+td {
+  text-align: center; /* 숫자 데이터 중앙 정렬 */
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  table {
+    font-size: 12px; /* 화면이 좁을 때 폰트 크기 감소 */
+  }
+
+  thead th,
+  tbody td {
+    padding: 8px; /* 좁은 화면에서 여백 줄이기 */
+  }
+}

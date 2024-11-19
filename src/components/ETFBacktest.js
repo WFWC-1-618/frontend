@@ -11,8 +11,12 @@ function ETFBacktest() {
   const [portfolioData, setPortfolioData] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // 헬퍼 함수: ETF 수익률 및 최종 금액 계산
-  const calculateETFPerformance = (etf, months, initialAmount, monthlyContribution) => {
+  const calculateETFPerformance = (
+    etf,
+    months,
+    initialAmount,
+    monthlyContribution
+  ) => {
     const etfInitialAmount = (initialAmount * etf.allocation) / 100;
     let etfFinalAmount = etfInitialAmount;
 
@@ -27,8 +31,9 @@ function ETFBacktest() {
 
   const handleDownloadCSV = () => {
     if (!result || portfolioData.length === 0) return;
-  
-    const csvHeader = "\uFEFFETF 심볼,비율 (%),수익률 (%),초기 금액,최종 금액\n"; // UTF-8 BOM 추가
+
+    const csvHeader =
+      "\uFEFFETF 심볼,비율 (%),수익률 (%),초기 금액,최종 금액\n"; // UTF-8 BOM 추가
     const csvContent = portfolioData
       .map((etf) => {
         const initialInvestment = (result.initialAmount * etf.allocation) / 100;
@@ -38,8 +43,10 @@ function ETFBacktest() {
         )},${initialInvestment.toFixed(2)},${finalAmount.toFixed(2)}`;
       })
       .join("\n");
-  
-    const blob = new Blob([csvHeader + csvContent], { type: "text/csv;charset=utf-8;" });
+
+    const blob = new Blob([csvHeader + csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -47,9 +54,8 @@ function ETFBacktest() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };  
+  };
 
-  // 폼 제출 핸들러
   const handleFormSubmit = async ({
     portfolio,
     startDate,
@@ -82,7 +88,9 @@ function ETFBacktest() {
         if (response.status === "fulfilled") {
           const priceData = response.value.data["Time Series (Daily)"];
           if (!priceData) {
-            console.warn(`No price data available for ${portfolio[index].symbol}.`);
+            console.warn(
+              `No price data available for ${portfolio[index].symbol}.`
+            );
             return;
           }
 
@@ -101,7 +109,9 @@ function ETFBacktest() {
           const start = getClosestDate(startDate);
           const end = getClosestDate(endDate);
 
-          const startPrice = parseFloat(priceData[start]?.["5. adjusted close"]);
+          const startPrice = parseFloat(
+            priceData[start]?.["5. adjusted close"]
+          );
           const endPrice = parseFloat(priceData[end]?.["5. adjusted close"]);
 
           if (!isNaN(startPrice) && !isNaN(endPrice)) {
@@ -114,7 +124,9 @@ function ETFBacktest() {
             });
           }
         } else {
-          console.warn(`Error fetching data for ${portfolio[index].symbol}: ${response.reason}`);
+          console.warn(
+            `Error fetching data for ${portfolio[index].symbol}: ${response.reason}`
+          );
         }
       });
 
@@ -122,8 +134,8 @@ function ETFBacktest() {
       setResult({
         startDate,
         endDate,
-        initialAmount: parseFloat(initialAmount), // 숫자로 변환
-        monthlyContribution: parseFloat(monthlyContribution), // 숫자로 변환
+        initialAmount: parseFloat(initialAmount),
+        monthlyContribution: parseFloat(monthlyContribution),
       });
     } catch (error) {
       setErrorMessage(`Error fetching data: ${error.message}`);
@@ -132,7 +144,6 @@ function ETFBacktest() {
     }
   };
 
-  // 포트폴리오 성장 계산
   const calculatePortfolioGrowth = useCallback(() => {
     const { initialAmount, startDate, endDate, monthlyContribution } = result;
 
@@ -142,19 +153,26 @@ function ETFBacktest() {
       (end.getFullYear() - start.getFullYear()) * 12 +
       (end.getMonth() - start.getMonth());
 
-    let cumulativeInvestment = initialAmount; // 초기 금액을 누적 투자 금액으로 초기화
-    let cumulativeFinalAmount = 0; // 최종 금액 초기화
+    let cumulativeInvestment = initialAmount;
+    let cumulativeFinalAmount = 0;
 
     portfolioData.forEach((etf) => {
-      const etfFinalAmount = calculateETFPerformance(etf, months, initialAmount, monthlyContribution);
-      cumulativeInvestment += (monthlyContribution * etf.allocation) / 100 * months; // 누적 투자 금액 계산
-      cumulativeFinalAmount += etfFinalAmount; // ETF 최종 금액 누적
+      const etfFinalAmount = calculateETFPerformance(
+        etf,
+        months,
+        initialAmount,
+        monthlyContribution
+      );
+      cumulativeInvestment +=
+        ((monthlyContribution * etf.allocation) / 100) * months;
+      cumulativeFinalAmount += etfFinalAmount;
     });
 
-    // 총 수익률 계산
     const totalReturn =
       cumulativeInvestment > 0
-        ? ((cumulativeFinalAmount - cumulativeInvestment) / cumulativeInvestment) * 100
+        ? ((cumulativeFinalAmount - cumulativeInvestment) /
+            cumulativeInvestment) *
+          100
         : 0;
 
     setResult((prev) => ({
@@ -163,12 +181,6 @@ function ETFBacktest() {
       finalAmount: cumulativeFinalAmount,
       cumulativeInvestment,
     }));
-
-    console.log("Debug Info:", {
-      cumulativeInvestment,
-      cumulativeFinalAmount,
-      totalReturn,
-    });
   }, [portfolioData, result]);
 
   useEffect(() => {
@@ -177,22 +189,26 @@ function ETFBacktest() {
   }, [portfolioData, result, calculatePortfolioGrowth]);
 
   return (
-    <div className="etf-backtest">
+    <div className={styles.etfBacktest}>
       <h1 className={styles.maintitle}>ETF 백테스팅 애플리케이션</h1>
       <PortfolioForm onSubmit={handleFormSubmit} />
-      {loading && <p className="loading">로딩 중...</p>}
-      {errorMessage && <p className="error">{errorMessage}</p>}
+      {loading && <p className={styles.loading}>로딩 중...</p>}
+      {errorMessage && <p className={styles.error}>{errorMessage}</p>}
       {result && result.totalReturn !== undefined && (
-        <div className="results">
+        <div className={styles.results}>
           <h2>백테스트 결과</h2>
           <p>총 수익률: {result.totalReturn.toFixed(2)}%</p>
           <p>최종 금액: {result.finalAmount.toLocaleString()}원</p>
-          <p>누적 투자 금액: {result.cumulativeInvestment.toLocaleString()}원</p>
+          <p>
+            누적 투자 금액: {result.cumulativeInvestment.toLocaleString()}원
+          </p>
           <button onClick={handleDownloadCSV} className={styles.button}>
             결과 다운로드 (CSV)
           </button>
           <ETFTable portfolioData={portfolioData} />
-          <PortfolioChart data={{ dates: result.dates, values: result.values }} />
+          <PortfolioChart
+            data={{ dates: result.dates, values: result.values }}
+          />
         </div>
       )}
     </div>
