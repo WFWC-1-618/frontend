@@ -15,7 +15,6 @@ function PortfolioForm({ onSubmit, onResetPortfolio }) {
   const openModal = () => {
     onResetPortfolio(); //포트폴리오 데이터 초기화
     setDisplayPortfolio([]); //포트폴리오 테이블 초기화(도넛도 초기화)
-    setResetPopup(true);
     setIsModalOpen(true);
   };
   const closeModal = () => setIsModalOpen(false); //모달 닫힐때는 초기화 할 필요 없음
