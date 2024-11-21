@@ -3,16 +3,21 @@ import PortfolioPopup from "./PortfolioPopup";
 import styles from "./PortfolioForm.module.css";
 import DonutChart from "./DonutChart"; // (1) 새로운 도넛 차트 컴포넌트 추가
 
-function PortfolioForm({ onSubmit }) {
+function PortfolioForm({ onSubmit, onResetPortfolio }) {
   const [displayPortfolio, setDisplayPortfolio] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [initialAmount, setInitialAmount] = useState(1000000);
   const [monthlyContribution, setMonthlyContribution] = useState(0);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const openModal = () => {
+    onResetPortfolio(); //포트폴리오 데이터 초기화
+    setDisplayPortfolio([]); //포트폴리오 테이블 초기화(도넛도 초기화)
+    setIsModalOpen(true);
+  };
+  const closeModal = () => setIsModalOpen(false); //모달 닫힐때는 초기화 할 필요 없음
 
   const handleSave = (popupPortfolio) => {
     if (
@@ -146,11 +151,7 @@ function PortfolioForm({ onSubmit }) {
         />
       </label>
 
-      <button
-        type="submit"
-        className={styles.button}
-        disabled={!isFormValid()}
-      >
+      <button type="submit" className={styles.button} disabled={!isFormValid()}>
         백테스트 실행
       </button>
     </form>

@@ -56,6 +56,12 @@ function ETFBacktest() {
     document.body.removeChild(link);
   };
 
+  //포트폴리오 데이터 초기화
+  const handleResetPortfolio = () => {
+    setPortfolioData([]);
+    setResult(null);
+  };
+
   const handleFormSubmit = async ({
     portfolio,
     startDate,
@@ -65,6 +71,7 @@ function ETFBacktest() {
   }) => {
     setLoading(true);
     setErrorMessage("");
+    setPortfolioData([]); //이전 데이터 초기화
     let fetchedPortfolioData = [];
 
     try {
@@ -191,10 +198,13 @@ function ETFBacktest() {
   return (
     <div className={styles.etfBacktest}>
       <h1 className={styles.maintitle}>ETF 백테스팅 애플리케이션</h1>
-      <PortfolioForm onSubmit={handleFormSubmit} />
+      <PortfolioForm
+        onSubmit={handleFormSubmit}
+        onResetPortfolio={handleResetPortfolio} //props로 전달 (portfoliodata 초기화하는 함수 전달)
+      />
       {loading && <p className={styles.loading}>로딩 중...</p>}
       {errorMessage && <p className={styles.error}>{errorMessage}</p>}
-      {result && result.totalReturn !== undefined && (
+      {!loading && result && result.totalReturn !== undefined && (
         <div className={styles.results}>
           <h2>백테스트 결과</h2>
           <p>총 수익률: {result.totalReturn.toFixed(2)}%</p>

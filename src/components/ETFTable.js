@@ -2,6 +2,10 @@ import React from "react";
 import styles from "./ETFTable.module.css";
 
 function ETFTable({ portfolioData }) {
+  if (!portfolioData || portfolioData.length === 0) {
+    return <p>포트폴리오 데이터 없음</p>;
+  }
+  console.log(portfolioData);
   return (
     <table className={styles.table}>
       <thead>
