@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./PortfolioPopup.module.css";
 
 const ETF_LIST = [
@@ -16,6 +16,15 @@ function PortfolioPopup({ isOpen, onSave, onClose }) {
   const filteredETFs = ETF_LIST.filter((etf) =>
     etf.symbol.toLowerCase().includes(symbol.toLowerCase())
   );
+
+  useEffect(() => {
+    //렌더링되면서 모달창 열렸을 떄, 초기화
+    if (isOpen) {
+      setPopupPortfolio([]); //modal 상태 초기화
+      setSymbol("");
+      setAllocation("");
+    }
+  }, [isOpen]);
 
   const handleAddETF = () => {
     if (!symbol || !allocation) {
@@ -35,7 +44,7 @@ function PortfolioPopup({ isOpen, onSave, onClose }) {
     onSave(popupPortfolio);
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) return null; //true일때만 렌더링
 
   return (
     <div className={styles.modalOverlay}>
