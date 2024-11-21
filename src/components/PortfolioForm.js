@@ -102,6 +102,7 @@ function PortfolioForm({ onSubmit, onResetPortfolio }) {
         포트폴리오 수정
       </button>
 
+      {/**isModalOpen일때 렌더링 */}
       <PortfolioPopup
         isOpen={isModalOpen}
         onSave={handleSave}

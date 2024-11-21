@@ -1,3 +1,7 @@
+/**
+ * 이 컴포넌트는 백테스트 실행 후
+ * 각 ETF에 대한 테이블을 표시해 줌
+ */
 import React from "react";
 import styles from "./ETFTable.module.css";
 
