@@ -23,8 +23,8 @@ function ETFBacktest() {
           to_currency: "KRW",
         },
         headers: {
-          "X-RapidAPI-Key": "09b882c2acmshebc153d01606355p196431jsn53c314766692",
-          "X-RapidAPI-Host": "alpha-vantage.p.rapidapi.com",
+          "X-RapidAPI-Key": "process.env.REACT_APP_RAPIDAPI_KEY",
+          "X-RapidAPI-Host": "process.env.REACT_APP_RAPIDAPI_HOST",
         },
       });
 
@@ -104,8 +104,8 @@ function ETFBacktest() {
               symbol: etf.symbol,
             },
             headers: {
-              "X-RapidAPI-Key": "09b882c2acmshebc153d01606355p196431jsn53c314766692",
-              "X-RapidAPI-Host": "alpha-vantage.p.rapidapi.com",
+              "X-RapidAPI-Key": "process.env.REACT_APP_RAPIDAPI_KEY",
+              "X-RapidAPI-Host": "process.env.REACT_APP_RAPIDAPI_HOST",
             },
           })
         )
