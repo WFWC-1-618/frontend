@@ -1,21 +1,35 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PortfolioPopup from "./PortfolioPopup";
 import styles from "./PortfolioForm.module.css";
 import DonutChart from "./DonutChart"; // 도넛 차트 컴포넌트 추가
 import AnnualReturnsChart from "./AnnualReturnsChart";
 import GrowthChart from "./GrowthChart"; 
 
-function PortfolioForm({ onSubmit, onResetPortfolio }) {
+function PortfolioForm({ onSubmit}) {
   const [displayPortfolio, setDisplayPortfolio] = useState([]);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [initialAmount, setInitialAmount] = useState(1000000);
+
+  const [startYear, setStartYear] = useState(1985);
+  const [startMonth, setStartMonth] = useState("Jan");
+  const [endYear, setEndYear] = useState(2024);
+  const [endMonth, setEndMonth] = useState("Dec");
+
+  const [startDate, setStartDate] = useState(null); // 시작 날짜
+  const [endDate, setEndDate] = useState(null); // 종료 날짜
+  
+  const [initialAmount, setInitialAmount] = useState(10000);
   const [monthlyContribution, setMonthlyContribution] = useState(0);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  useEffect(() => {
+    const start = new Date(`${startYear}-${startMonth}-01`);
+    const end = new Date(`${endYear}-${endMonth}-01`);
+    setStartDate(start);
+    setEndDate(end);
+  }, [startYear, startMonth, endYear, endMonth]);
+
   const openModal = () => {
-    onResetPortfolio(); //포트폴리오 데이터 초기화
+    
     setDisplayPortfolio([]); //포트폴리오 테이블 초기화(도넛도 초기화)
     setIsModalOpen(true);
   };
@@ -35,13 +49,11 @@ function PortfolioForm({ onSubmit, onResetPortfolio }) {
   };
 
   const isFormValid = () => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    const startDate = new Date(`${startYear}-${startMonth}-01`);
+    const endDate = new Date(`${endYear}-${endMonth}-01`);
     return (
       displayPortfolio.length > 0 &&
-      startDate &&
-      endDate &&
-      start < end &&
+      startDate < endDate &&
       initialAmount > 0 &&
       monthlyContribution >= 0
     );
@@ -55,12 +67,16 @@ function PortfolioForm({ onSubmit, onResetPortfolio }) {
     }
     onSubmit({
       portfolio: displayPortfolio,
-      startDate,
-      endDate,
+      startDate: `${startYear}-${startMonth}`,
+      endDate: `${endYear}-${endMonth}`,
       initialAmount,
       monthlyContribution,
     });
   };
+
+  const months = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  ];
 
   return (
     <form onSubmit={handleSubmit} className={styles.formContainer}>
@@ -135,23 +151,63 @@ function PortfolioForm({ onSubmit, onResetPortfolio }) {
       </label>
 
       <label className={styles.label}>
-        시작 날짜:
-        <input
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          className={styles.inputField}
-        />
+        시작 연도:
+        <select
+          value={startYear}
+          onChange={(e) => setStartYear(e.target.value)}
+          className={styles.selectField}
+        >
+          {Array.from({ length: 50 }, (_, i) => 1980 + i).map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
+        </select>
       </label>
 
       <label className={styles.label}>
-        종료 날짜:
-        <input
-          type="date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          className={styles.inputField}
-        />
+        시작 월:
+        <select
+          value={startMonth}
+          onChange={(e) => setStartMonth(e.target.value)}
+          className={styles.selectField}
+        >
+          {months.map((month) => (
+            <option key={month} value={month}>
+              {month}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className={styles.label}>
+        종료 연도:
+        <select
+          value={endYear}
+          onChange={(e) => setEndYear(e.target.value)}
+          className={styles.selectField}
+        >
+          {Array.from({ length: 50 }, (_, i) => 1980 + i).map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className={styles.label}>
+        종료 월:
+        <select
+          value={endMonth}
+          onChange={(e) => setEndMonth(e.target.value)}
+          className={styles.selectField}
+        >
+          {months.map((month) => (
+            <option key={month} value={month}>
+              {month}
+            </option>
+          ))}
+        </select>
       </label>
 
       <button type="submit" className={styles.button} disabled={!isFormValid()}>
