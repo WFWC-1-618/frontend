@@ -23,8 +23,8 @@ function ETFBacktest() {
           to_currency: "KRW",
         },
         headers: {
-          "X-RapidAPI-Key": "process.env.REACT_APP_RAPIDAPI_KEY",
-          "X-RapidAPI-Host": "process.env.REACT_APP_RAPIDAPI_HOST",
+          "X-RapidAPI-Key": process.env.REACT_APP_RAPIDAPI_KEY,
+          "X-RapidAPI-Host": process.env.REACT_APP_RAPIDAPI_HOST,
         },
       });
 
@@ -73,7 +73,7 @@ function ETFBacktest() {
         )},${finalAmount.toFixed(2)}`;
       })
       .join("\n");
-
+      
     const blob = new Blob([csvHeader + csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -104,8 +104,8 @@ function ETFBacktest() {
               symbol: etf.symbol,
             },
             headers: {
-              "X-RapidAPI-Key": "process.env.REACT_APP_RAPIDAPI_KEY",
-              "X-RapidAPI-Host": "process.env.REACT_APP_RAPIDAPI_HOST",
+              "X-RapidAPI-Key": process.env.REACT_APP_RAPIDAPI_KEY,
+              "X-RapidAPI-Host": process.env.REACT_APP_RAPIDAPI_HOST,
             },
           })
         )
