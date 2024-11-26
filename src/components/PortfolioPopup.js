@@ -47,66 +47,68 @@ function PortfolioPopup({ isOpen, onSave, onClose }) {
   if (!isOpen) return null; //true일때만 렌더링
 
   return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modalContent}>
-        <h2>포트폴리오 수정</h2>
-        <div>
-          <input
-            type="text"
-            placeholder="ETF 심볼"
-            value={symbol}
-            onChange={(e) => setSymbol(e.target.value)}
-            className={styles.inputField}
-            list="etf-suggestions"
-          />
-          <datalist id="etf-suggestions">
-            {filteredETFs.map((etf, index) => (
-              <option key={index} value={etf.symbol}>
-                {etf.name}
-              </option>
-            ))}
-          </datalist>
-          <input
-            type="number"
-            placeholder="비율 (%)"
-            value={allocation}
-            onChange={(e) => setAllocation(e.target.value)}
-            className={styles.inputField}
-          />
-          <button onClick={handleAddETF} className={styles.button}>
-            추가
-          </button>
-        </div>
-
-        <h3>추가된 ETF 목록</h3>
-        {popupPortfolio.length > 0 ? (
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>ETF 심볼</th>
-                <th>비율 (%)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {popupPortfolio.map((etf, index) => (
-                <tr key={index}>
-                  <td>{etf.symbol}</td>
-                  <td>{etf.allocation}</td>
-                </tr>
+    <div className={styles.modalMain}>
+      <div className={styles.modalOverlay}>
+        <div className={styles.modalContent}>
+          <h2>포트폴리오 수정</h2>
+          <div>
+            <input
+              type="text"
+              placeholder="ETF 심볼"
+              value={symbol}
+              onChange={(e) => setSymbol(e.target.value)}
+              className={styles.inputField}
+              list="etf-suggestions"
+            />
+            <datalist id="etf-suggestions">
+              {filteredETFs.map((etf, index) => (
+                <option key={index} value={etf.symbol}>
+                  {etf.name}
+                </option>
               ))}
-            </tbody>
-          </table>
-        ) : (
-          <p>포트폴리오가 없습니다.</p>
-        )}
+            </datalist>
+            <input
+              type="number"
+              placeholder="비율 (%)"
+              value={allocation}
+              onChange={(e) => setAllocation(e.target.value)}
+              className={styles.inputField}
+            />
+            <button onClick={handleAddETF} className={styles.button}>
+              추가
+            </button>
+          </div>
 
-        <div>
-          <button onClick={handleSave} className={styles.button}>
-            저장
-          </button>
-          <button onClick={onClose} className={styles.button}>
-            닫기
-          </button>
+          <h3>추가된 ETF 목록</h3>
+          {popupPortfolio.length > 0 ? (
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>ETF 심볼</th>
+                  <th>비율 (%)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {popupPortfolio.map((etf, index) => (
+                  <tr key={index}>
+                    <td>{etf.symbol}</td>
+                    <td>{etf.allocation}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p>포트폴리오가 없습니다.</p>
+          )}
+
+          <div>
+            <button onClick={handleSave} className={styles.button}>
+              저장
+            </button>
+            <button onClick={onClose} className={styles.button}>
+              닫기
+            </button>
+          </div>
         </div>
       </div>
     </div>
