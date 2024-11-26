@@ -4,6 +4,8 @@ import PortfolioForm from "./PortfolioForm";
 import PortfolioChart from "./PortfolioChart";
 import ETFTable from "./ETFTable";
 import styles from "./ETFBacktest.module.css";
+import AnnualReturnsTable from "./AnnualReturnsTable";
+
 
 function ETFBacktest() {
   const [result, setResult] = useState(null);
@@ -94,16 +96,13 @@ function ETFBacktest() {
     document.body.removeChild(link);
   };
 
-  const handleFormSubmit = async ({
-    portfolio,
-    startDate,
-    endDate,
-    initialAmount,
-    monthlyContribution,
-  }) => {
+  const [annualReturns, setAnnualReturns] = useState([]);
+
+  const handleFormSubmit = async ({ portfolio, startDate, endDate, initialAmount, monthlyContribution }) => {
     setLoading(true);
     setErrorMessage("");
     let fetchedPortfolioData = [];
+    let annualReturnsData = [];
 
     try {
       const responses = await Promise.allSettled(
@@ -124,23 +123,13 @@ function ETFBacktest() {
       responses.forEach((response, index) => {
         if (response.status === "fulfilled") {
           const priceData = response.value.data["Monthly Adjusted Time Series"];
-          if (!priceData) {
-            console.warn(
-              `No price data available for ${portfolio[index].symbol}.`
-            );
-            return;
-          }
+          if (!priceData) return;
 
-          const dates = Object.keys(priceData).sort(
-            (a, b) => new Date(a) - new Date(b)
-          );
+          const dates = Object.keys(priceData).sort((a, b) => new Date(a) - new Date(b));
 
           const getClosestDate = (targetDate) =>
             dates.reduce((prev, curr) =>
-              Math.abs(new Date(curr) - new Date(targetDate)) <
-              Math.abs(new Date(prev) - new Date(targetDate))
-                ? curr
-                : prev
+              Math.abs(new Date(curr) - new Date(targetDate)) < Math.abs(new Date(prev) - new Date(targetDate)) ? curr : prev
             );
 
           const start = getClosestDate(startDate);
@@ -149,12 +138,13 @@ function ETFBacktest() {
           const startPrice = parseFloat(
             priceData[start]?.["5. adjusted close"]
           );
-          const endPrice = parseFloat(priceData[end]?.["5. adjusted close"]);
+          const endPrice = parseFloat(
+            priceData[end]?.["5. adjusted close"]
+          );
 
           if (!isNaN(startPrice) && !isNaN(endPrice)) {
             const durationMonths =
-              (new Date(end).getFullYear() - new Date(start).getFullYear()) *
-                12 +
+              (new Date(end).getFullYear() - new Date(start).getFullYear()) * 12 +
               (new Date(end).getMonth() - new Date(start).getMonth());
             const durationYears = durationMonths / 12;
 
@@ -167,17 +157,38 @@ function ETFBacktest() {
               startPrice,
               endPrice,
               returns: ((endPrice - startPrice) / startPrice) * 100,
-              annualizedReturn: annualizedReturn * 100, // 연간 수익률 %
+              annualizedReturn: annualizedReturn * 100,
+            });
+
+            // 연도별 데이터 계산
+            const yearReturns = {};
+            dates.forEach((date) => {
+              const year = new Date(date).getFullYear();
+              if (year >= new Date(startDate).getFullYear() && year <= new Date(endDate).getFullYear()) {
+                if (!yearReturns[year]) {
+                  yearReturns[year] = { year, returns: [] };
+                }
+                yearReturns[year].returns.push(parseFloat(priceData[date]["5. adjusted close"]));
+              }
+            });
+
+            Object.values(yearReturns).forEach((yearData) => {
+              if (yearData.returns.length > 1) {
+                const startYearPrice = yearData.returns[0];
+                const endYearPrice = yearData.returns[yearData.returns.length - 1];
+                annualReturnsData.push({
+                  year: yearData.year,
+                  symbol: portfolio[index].symbol,
+                  return: ((endYearPrice - startYearPrice) / startYearPrice) * 100,
+                });
+              }
             });
           }
-        } else {
-          console.warn(
-            `Error fetching data for ${portfolio[index].symbol}: ${response.reason}`
-          );
         }
       });
 
       setPortfolioData(fetchedPortfolioData);
+      setAnnualReturns(annualReturnsData); // 연도별 데이터 저장
       setResult({
         startDate,
         endDate,
@@ -214,7 +225,7 @@ function ETFBacktest() {
     const durationMonths =
       (new Date(result.endDate).getFullYear() -
         new Date(result.startDate).getFullYear()) *
-        12 +
+      12 +
       (new Date(result.endDate).getMonth() -
         new Date(result.startDate).getMonth());
     const durationYears = durationMonths / 12;
@@ -293,9 +304,15 @@ function ETFBacktest() {
             결과 다운로드 (CSV)
           </button>
           <ETFTable portfolioData={portfolioData} />
-          <PortfolioChart
-            data={{ dates: result.dates, values: result.values }}
+          <h3>Annual Returns</h3>
+          <AnnualReturnsTable
+            annualReturns={annualReturns}
+            portfolioReturns={portfolioData.map((etf) => ({
+              year: etf.year,
+              return: etf.returns,
+            }))}
           />
+
         </div>
       )}
     </div>
