@@ -1,6 +1,6 @@
 /* 전체 폼 컨테이너 스타일 */
 .formContainer {
-  max-width: 600px;
+  max-width: 800px;
   margin: 20px auto; /* 중앙 정렬 */
   padding: 20px;
   background-color: #f9f9f9; /* 밝은 배경색 */
