@@ -67,7 +67,9 @@ function PortfolioChart({ data }) {
     },
   };
 
-  return <Line data={chartData} options={options} />;
+  return (
+    <Line data={chartData} options={options} className={styles.lineChart} />
+  );
 }
 
 export default PortfolioChart;

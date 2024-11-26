@@ -3,9 +3,9 @@ import PortfolioPopup from "./PortfolioPopup";
 import styles from "./PortfolioForm.module.css";
 import DonutChart from "./DonutChart"; // 도넛 차트 컴포넌트 추가
 import AnnualReturnsChart from "./AnnualReturnsChart";
-import GrowthChart from "./GrowthChart"; 
+import GrowthChart from "./GrowthChart";
 
-function PortfolioForm({ onSubmit}) {
+function PortfolioForm({ onSubmit }) {
   const [displayPortfolio, setDisplayPortfolio] = useState([]);
 
   const [startYear, setStartYear] = useState(1985);
@@ -15,7 +15,7 @@ function PortfolioForm({ onSubmit}) {
 
   const [startDate, setStartDate] = useState(null); // 시작 날짜
   const [endDate, setEndDate] = useState(null); // 종료 날짜
-  
+
   const [initialAmount, setInitialAmount] = useState(10000);
   const [monthlyContribution, setMonthlyContribution] = useState(0);
 
@@ -29,7 +29,6 @@ function PortfolioForm({ onSubmit}) {
   }, [startYear, startMonth, endYear, endMonth]);
 
   const openModal = () => {
-    
     setDisplayPortfolio([]); //포트폴리오 테이블 초기화(도넛도 초기화)
     setIsModalOpen(true);
   };
@@ -75,13 +74,22 @@ function PortfolioForm({ onSubmit}) {
   };
 
   const months = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
   ];
 
   return (
     <form onSubmit={handleSubmit} className={styles.formContainer}>
-      <h2 className={styles.maintitle}>포트폴리오 구성</h2>
-
       <h3 className={styles.title}>나의 포트폴리오</h3>
 
       {/* (2) 테이블과 차트를 나란히 배치하기 위해 flex 컨테이너 추가 */}
