@@ -4,6 +4,7 @@
 table {
   width: 100%;
   border-collapse: collapse; /* 중복 테두리 제거 */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   margin: 20px 0;
   font-family: Arial, sans-serif;
   font-size: 14px;
