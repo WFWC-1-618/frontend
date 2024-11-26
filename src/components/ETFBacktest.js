@@ -16,17 +16,20 @@ function ETFBacktest() {
   // 환율 정보를 가져오는 함수
   const fetchExchangeRate = async () => {
     try {
-      const response = await axios.get("https://alpha-vantage.p.rapidapi.com/query", {
-        params: {
-          function: "CURRENCY_EXCHANGE_RATE",
-          from_currency: "USD",
-          to_currency: "KRW",
-        },
-        headers: {
-          "X-RapidAPI-Key": process.env.REACT_APP_RAPIDAPI_KEY,
-          "X-RapidAPI-Host": process.env.REACT_APP_RAPIDAPI_HOST,
-        },
-      });
+      const response = await axios.get(
+        "https://alpha-vantage.p.rapidapi.com/query",
+        {
+          params: {
+            function: "CURRENCY_EXCHANGE_RATE",
+            from_currency: "USD",
+            to_currency: "KRW",
+          },
+          headers: {
+            "X-RapidAPI-Key": process.env.REACT_APP_RAPIDAPI_KEY,
+            "X-RapidAPI-Host": process.env.REACT_APP_RAPIDAPI_HOST,
+          },
+        }
+      );
 
       const rate = parseFloat(
         response.data["Realtime Currency Exchange Rate"]["5. Exchange Rate"]
@@ -44,7 +47,12 @@ function ETFBacktest() {
     fetchExchangeRate();
   }, []);
 
-  const calculateETFPerformance = (etf, months, initialAmount, monthlyContribution) => {
+  const calculateETFPerformance = (
+    etf,
+    months,
+    initialAmount,
+    monthlyContribution
+  ) => {
     const etfInitialAmount = (initialAmount * etf.allocation) / 100;
     let etfFinalAmount = etfInitialAmount;
 
@@ -73,8 +81,10 @@ function ETFBacktest() {
         )},${finalAmount.toFixed(2)}`;
       })
       .join("\n");
-      
-    const blob = new Blob([csvHeader + csvContent], { type: "text/csv;charset=utf-8;" });
+
+    const blob = new Blob([csvHeader + csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -115,7 +125,9 @@ function ETFBacktest() {
         if (response.status === "fulfilled") {
           const priceData = response.value.data["Monthly Adjusted Time Series"];
           if (!priceData) {
-            console.warn(`No price data available for ${portfolio[index].symbol}.`);
+            console.warn(
+              `No price data available for ${portfolio[index].symbol}.`
+            );
             return;
           }
 
@@ -134,17 +146,20 @@ function ETFBacktest() {
           const start = getClosestDate(startDate);
           const end = getClosestDate(endDate);
 
-          const startPrice = parseFloat(priceData[start]?.["5. adjusted close"]);
+          const startPrice = parseFloat(
+            priceData[start]?.["5. adjusted close"]
+          );
           const endPrice = parseFloat(priceData[end]?.["5. adjusted close"]);
 
           if (!isNaN(startPrice) && !isNaN(endPrice)) {
             const durationMonths =
-            (new Date(end).getFullYear() - new Date(start).getFullYear()) * 12 +
-            (new Date(end).getMonth() - new Date(start).getMonth());
-          const durationYears = durationMonths / 12;
+              (new Date(end).getFullYear() - new Date(start).getFullYear()) *
+                12 +
+              (new Date(end).getMonth() - new Date(start).getMonth());
+            const durationYears = durationMonths / 12;
 
-          const annualizedReturn =
-            Math.pow(endPrice / startPrice, 1 / durationYears) - 1;
+            const annualizedReturn =
+              Math.pow(endPrice / startPrice, 1 / durationYears) - 1;
 
             fetchedPortfolioData.push({
               symbol: portfolio[index].symbol,
@@ -156,7 +171,9 @@ function ETFBacktest() {
             });
           }
         } else {
-          console.warn(`Error fetching data for ${portfolio[index].symbol}: ${response.reason}`);
+          console.warn(
+            `Error fetching data for ${portfolio[index].symbol}: ${response.reason}`
+          );
         }
       });
 
@@ -176,23 +193,24 @@ function ETFBacktest() {
 
   const calculatePortfolioGrowth = useCallback(() => {
     const { initialAmount, monthlyContribution } = result;
-  
+
     let cumulativeInvestment = initialAmount;
     let cumulativeFinalAmount = 0;
-  
+
     portfolioData.forEach((etf) => {
       const etfInitialAmount = (initialAmount * etf.allocation) / 100;
       const etfFinalAmount = etfInitialAmount * (1 + etf.returns / 100);
       cumulativeFinalAmount += etfFinalAmount;
-  
+
       // 월별 적립액 반영
       const monthlyInvestment = (monthlyContribution * etf.allocation) / 100;
       cumulativeInvestment += monthlyInvestment;
     });
-  
+
     const totalReturn =
-      ((cumulativeFinalAmount - cumulativeInvestment) / cumulativeInvestment) * 100;
-  
+      ((cumulativeFinalAmount - cumulativeInvestment) / cumulativeInvestment) *
+      100;
+
     const durationMonths =
       (new Date(result.endDate).getFullYear() -
         new Date(result.startDate).getFullYear()) *
@@ -200,10 +218,10 @@ function ETFBacktest() {
       (new Date(result.endDate).getMonth() -
         new Date(result.startDate).getMonth());
     const durationYears = durationMonths / 12;
-  
+
     const portfolioAnnualizedReturn =
       Math.pow(cumulativeFinalAmount / initialAmount, 1 / durationYears) - 1;
-  
+
     setResult((prev) => ({
       ...prev,
       totalReturn,
@@ -212,7 +230,6 @@ function ETFBacktest() {
       portfolioAnnualizedReturn: portfolioAnnualizedReturn * 100,
     }));
   }, [portfolioData, result]);
-  
 
   useEffect(() => {
     if (portfolioData.length === 0 || !result) return;
@@ -226,7 +243,10 @@ function ETFBacktest() {
       <div className="currency-selector">
         <label>
           통화:
-          <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
+          <select
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value)}
+          >
             <option value="KRW">KRW (원)</option>
             <option value="USD">USD (달러)</option>
           </select>
@@ -235,7 +255,7 @@ function ETFBacktest() {
       {loading && <p className="loading">로딩 중...</p>}
       {errorMessage && <p className="error">{errorMessage}</p>}
       {result && result.totalReturn !== undefined && (
-        <div className="results">
+        <div className={styles.results}>
           <h2>백테스트 결과</h2>
           <table className={styles.resultTable}>
             <thead>
@@ -249,7 +269,9 @@ function ETFBacktest() {
                 <td>시작 잔액</td>
                 <td>
                   {currency === "KRW"
-                    ? `${(result.initialAmount * exchangeRate).toLocaleString()} 원`
+                    ? `${(
+                        result.initialAmount * exchangeRate
+                      ).toLocaleString()} 원`
                     : `${result.initialAmount.toLocaleString()} USD`}
                 </td>
               </tr>
@@ -257,7 +279,9 @@ function ETFBacktest() {
                 <td>잔액 종료</td>
                 <td>
                   {currency === "KRW"
-                    ? `${(result.finalAmount * exchangeRate).toLocaleString()} 원`
+                    ? `${(
+                        result.finalAmount * exchangeRate
+                      ).toLocaleString()} 원`
                     : `${result.finalAmount.toLocaleString()} USD`}
                 </td>
               </tr>
@@ -269,7 +293,9 @@ function ETFBacktest() {
             결과 다운로드 (CSV)
           </button>
           <ETFTable portfolioData={portfolioData} />
-          <PortfolioChart data={{ dates: result.dates, values: result.values }} />
+          <PortfolioChart
+            data={{ dates: result.dates, values: result.values }}
+          />
         </div>
       )}
     </div>

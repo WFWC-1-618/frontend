@@ -38,11 +38,12 @@
 
 /* 결과 섹션 스타일 */
 .results {
-  margin-top: 20px;
+  max-width: 800px;
+  margin: 20px auto;
   padding: 20px;
-  background-color: #ffffff;
+  background-color: #f9f9f9;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 그림자 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .results h2 {
