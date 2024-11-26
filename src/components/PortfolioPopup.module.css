@@ -24,13 +24,11 @@
 
 /* 모달 콘텐츠 */
 .modal-content {
-  background: #ffffff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  width: 100%;
-  max-width: 400px;
-  position: relative;
+  display: flex;
+  flex-direction: column; /* 기존의 column 레이아웃 유지 */
+  align-items: center; /* 수평 중앙 정렬 */
+  justify-content: center; /* 수직 중앙 정렬 */
+  height: 100%; /* 부모 요소의 높이를 꽉 채움 */
 }
 .popupContainer {
   background-color: #ffffff; /* 흰색 배경 */
@@ -75,9 +73,10 @@
 
 /* 테이블 스타일 */
 .table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
+  width: 80%; /* 테이블 너비 */
+  max-width: 600px; /* 최대 너비 제한 */
+  margin: 0 auto; /* 안전한 중앙 정렬 */
+  border-collapse: collapse; /* 경계선 간격 제거 */
 }
 
 .table th,
