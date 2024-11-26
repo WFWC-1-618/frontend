@@ -9,7 +9,7 @@ function ETFTable({ portfolioData }) {
   if (!portfolioData || portfolioData.length === 0) {
     return <p>포트폴리오 데이터 없음</p>;
   }
-  console.log(portfolioData);
+
   return (
     <table className={styles.table}>
       <thead>
@@ -24,18 +24,25 @@ function ETFTable({ portfolioData }) {
       <tbody>
         {portfolioData.map((etf, index) => (
           <tr key={index}>
-            <td>{etf.symbol}</td>
-            <td>{etf.allocation.toFixed(2)}</td>
-            <td>{etf.returns.toFixed(2)}</td>
+            <td>{etf.symbol || "N/A"}</td>
+            <td>{etf.allocation !== undefined ? etf.allocation.toFixed(2) : "N/A"}</td>
+            <td>{etf.returns !== undefined ? etf.returns.toFixed(2) : "N/A"}</td>
             <td>
-              {((etf.startPrice * etf.allocation) / 100).toLocaleString()}
+              {etf.startPrice !== undefined
+                ? ((etf.startPrice * etf.allocation) / 100).toLocaleString()
+                : "N/A"}
             </td>
-            <td>{((etf.endPrice * etf.allocation) / 100).toLocaleString()}</td>
+            <td>
+              {etf.endPrice !== undefined
+                ? ((etf.endPrice * etf.allocation) / 100).toLocaleString()
+                : "N/A"}
+            </td>
           </tr>
         ))}
       </tbody>
     </table>
   );
 }
+
 
 export default ETFTable;

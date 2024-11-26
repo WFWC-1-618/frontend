@@ -68,33 +68,72 @@ function ETFBacktest() {
   };
 
   const handleDownloadCSV = () => {
-    if (!result || portfolioData.length === 0) return;
-
-    const csvHeader =
-      "\uFEFFETF 심볼,비율 (%),수익률 (%),연간 수익률 (%),초기 금액,최종 금액\n";
-    const csvContent = portfolioData
+    if (!result || portfolioData.length === 0 || annualReturns.length === 0) return;
+  
+    const now = new Date();
+    const timestamp = now
+      .toISOString()
+      .replace(/T/, '_')
+      .replace(/:/g, '')
+      .split('.')[0]; // 현재 시간 (파일명에 사용)
+  
+    // **1. 포트폴리오 요약 정보**
+    const summaryHeader = "\uFEFF포트폴리오 요약\n";
+    const summaryContent = `총 투자 금액,${result.initialAmount.toFixed(2)} USD\n` +
+      `최종 금액,${result.finalAmount.toFixed(2)} USD\n` +
+      `총 수익률,${result.totalReturn.toFixed(2)} %\n` +
+      `연간 수익률,${result.portfolioAnnualizedReturn.toFixed(2)} %\n`;
+  
+    // **2. ETF 데이터**
+    const etfHeader = "\n포트폴리오 구성\nETF 심볼,비율 (%),수익률 (%),연간 수익률 (%),초기 금액,최종 금액\n";
+    const etfContent = portfolioData
       .map((etf) => {
         const initialInvestment = (result.initialAmount * etf.allocation) / 100;
         const finalAmount = initialInvestment * (1 + etf.returns / 100);
-        return `${etf.symbol},${etf.allocation},${etf.returns.toFixed(
-          2
-        )},${etf.annualizedReturn.toFixed(2)},${initialInvestment.toFixed(
-          2
-        )},${finalAmount.toFixed(2)}`;
+        return `${etf.symbol || "N/A"},${etf.allocation.toFixed(2)},${etf.returns.toFixed(2)},` +
+          `${etf.annualizedReturn.toFixed(2)},${initialInvestment.toFixed(2)},${finalAmount.toFixed(2)}`;
       })
       .join("\n");
-
-    const blob = new Blob([csvHeader + csvContent], {
+  
+    // **3. 연간 수익률 데이터**
+    const annualHeader = "\n연간 수익률\nYear,ETF Symbol,ETF Return (%),Portfolio Return (%)\n";
+    const groupedReturns = annualReturns.reduce((acc, data) => {
+      if (!acc[data.year]) acc[data.year] = [];
+      acc[data.year].push(data);
+      return acc;
+    }, {});
+  
+    const annualContent = Object.keys(groupedReturns)
+      .map((year) =>
+        groupedReturns[year]
+          .map((data, index) => {
+            const portfolioReturn = index === 0
+              ? portfolioData
+                  .find((etf) => etf.symbol === data.symbol)
+                  ?.returns.toFixed(2) || "N/A"
+              : "";
+            return `${year},${data.symbol},${data.return.toFixed(2)},${portfolioReturn}`;
+          })
+          .join("\n")
+      )
+      .join("\n");
+  
+    // **4. CSV 파일 합치기**
+    const fullCSVContent = `${summaryHeader}${summaryContent}\n${etfHeader}${etfContent}\n${annualHeader}${annualContent}`;
+  
+    // Blob 생성 및 다운로드
+    const blob = new Blob([fullCSVContent], {
       type: "text/csv;charset=utf-8;",
     });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", "ETF_Backtest_Results.csv");
+    link.setAttribute("download", `ETF_Backtest_Results_${timestamp}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
+  
 
   const [annualReturns, setAnnualReturns] = useState([]);
 

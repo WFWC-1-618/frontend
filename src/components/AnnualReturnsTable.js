@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "./AnnualReturnsTable.module.css";
 
-const AnnualReturnsTable = ({ annualReturns, portfolioReturns }) => {
+const AnnualReturnsTable = ({ annualReturns, portfolioAnnualReturns }) => {
     if (!annualReturns || annualReturns.length === 0) {
       return <p>연도별 데이터가 없습니다.</p>;
     }
@@ -31,7 +31,7 @@ const AnnualReturnsTable = ({ annualReturns, portfolioReturns }) => {
                 <td>{data.return.toFixed(2)}</td>
                 {index === 0 && (
                   <td rowSpan={groupedReturns[year].length}>
-                    {portfolioReturns.find((p) => p.year === parseInt(year))?.return.toFixed(2) || "N/A"}
+                    {portfolioAnnualReturns?.find((p) => p.year === parseInt(year))?.return?.toFixed(2) || "N/A"}
                   </td>
                 )}
               </tr>
@@ -43,4 +43,3 @@ const AnnualReturnsTable = ({ annualReturns, portfolioReturns }) => {
   };
   
   export default AnnualReturnsTable;
-  
