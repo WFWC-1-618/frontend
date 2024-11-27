@@ -1,6 +1,6 @@
 import React from "react";
 //import './App.css';
-import ETFBacktest from "./components/ETFBacktest";
+import ETFBacktest from "./pages/ETFBacktest";
 
 function App() {
   return (
