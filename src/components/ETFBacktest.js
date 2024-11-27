@@ -229,28 +229,38 @@ function ETFBacktest() {
     if (!result || portfolioData.length === 0) return;
   
     const { initialAmount, monthlyContribution } = result;
-    let cumulativeInvestment = initialAmount;
-    let cumulativeFinalAmount = 0;
+    let cumulativeInvestment = initialAmount; // 초기 투자 금액
+    let cumulativeFinalAmount = 0; // 최종 금액
   
+    // 각 ETF에 대해 월별 적립금액을 반영
     portfolioData.forEach((etf) => {
+      // ETF에 대한 초기 투자 금액
       const etfInitialAmount = (initialAmount * etf.allocation) / 100;
-      const etfFinalAmount = etfInitialAmount * (1 + etf.returns / 100);
-      cumulativeFinalAmount += etfFinalAmount;
+      let etfFinalAmount = etfInitialAmount * (1 + etf.returns / 100);
   
+      // ETF에 월 적립금액이 반영된 금액 계산
       const monthlyInvestment = (monthlyContribution * etf.allocation) / 100;
-      cumulativeInvestment += monthlyInvestment;
+      let etfMonthlyFinalAmount = 0;
+  
+      // 월 적립금액의 투자 효과를 반영
+      for (let i = 0; i < (new Date(result.endDate).getFullYear() - new Date(result.startDate).getFullYear()) * 12; i++) {
+        etfMonthlyFinalAmount += monthlyInvestment * (1 + etf.returns / 100);
+      }
+  
+      // 누적 금액에 월 적립금액 반영
+      cumulativeFinalAmount += etfFinalAmount + etfMonthlyFinalAmount;
+  
+      // 월 적립금액 누적
+      cumulativeInvestment += monthlyInvestment * (new Date(result.endDate).getFullYear() - new Date(result.startDate).getFullYear()) * 12;
     });
   
-    const totalReturn =
-      ((cumulativeFinalAmount - cumulativeInvestment) / cumulativeInvestment) *
-      100;
+    // 총 수익률 계산
+    const totalReturn = ((cumulativeFinalAmount - cumulativeInvestment) / cumulativeInvestment) * 100;
   
+    // 연환산 수익률 계산
     const durationMonths =
-      (new Date(result.endDate).getFullYear() -
-        new Date(result.startDate).getFullYear()) *
-        12 +
-      (new Date(result.endDate).getMonth() -
-        new Date(result.startDate).getMonth());
+      (new Date(result.endDate).getFullYear() - new Date(result.startDate).getFullYear()) * 12 +
+      (new Date(result.endDate).getMonth() - new Date(result.startDate).getMonth());
     const durationYears = durationMonths / 12;
   
     const portfolioAnnualizedReturn =
@@ -264,6 +274,7 @@ function ETFBacktest() {
       portfolioAnnualizedReturn: portfolioAnnualizedReturn * 100,
     }));
   }, [portfolioData, result]);
+  
   
   useEffect(() => {
     calculatePortfolioGrowth();
