@@ -349,6 +349,12 @@ function ETFBacktest() {
         const etfInitialInvestment = (initialAmount * etf.allocation) / 100;
         const etfMonthlyInvestment =
           (monthlyContribution * etf.allocation) / 100;
+
+        console.log(`ETF: ${etf.symbol}, Growth Rate: ${monthlyGrowthRate}`);
+        console.log(
+          `Initial Investment: ${etfInitialInvestment}, Monthly Investment: ${etfMonthlyInvestment}`
+        );
+
         return (
           total +
           etfInitialInvestment * (1 + monthlyGrowthRate) +
@@ -356,7 +362,11 @@ function ETFBacktest() {
         );
       }, 0);
 
-      console.log(monthlyPortfolioValue);
+      console.log(
+        `Date: ${currentDate
+          .toISOString()
+          .slice(0, 7)}, Portfolio Value: ${monthlyPortfolioValue}`
+      );
 
       growthData.push({
         date: currentDate.toISOString().slice(0, 7), // YYYY-MM 형식
