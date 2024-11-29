@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import PortfolioForm from "../components/PortfolioForm";
-import PortfolioChart from "../components/PortfolioChart";
 import ETFTable from "../components/ETFTable";
 import styles from "./ETFBacktest.module.css";
 import AnnualReturnsTable from "../components/AnnualReturnsTable";
+import GrowthChart from "../components/GrowthChart";
 
 function ETFBacktest() {
   const [result, setResult] = useState(null);
@@ -13,6 +13,10 @@ function ETFBacktest() {
   const [errorMessage, setErrorMessage] = useState("");
   const [exchangeRate, setExchangeRate] = useState(1); // 기본 환율
   const [currency, setCurrency] = useState("USD");
+
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [growthData, setGrowthData] = useState([]);
 
   // 환율 정보를 가져오는 함수
   const fetchExchangeRate = async () => {
@@ -145,6 +149,9 @@ function ETFBacktest() {
     let fetchedPortfolioData = [];
     let annualReturnsData = [];
 
+    setStartDate(startDate);
+    setEndDate(endDate);
+
     try {
       //포트폴리오의 모든ETF에 대해 비동기로 API요청보냄
       const responses = await Promise.allSettled(
@@ -272,6 +279,10 @@ function ETFBacktest() {
     let cumulativeInvestment = initialAmount; // 초기 투자 금액
     let cumulativeFinalAmount = 0; // 최종 금액
 
+    const growthData = []; //성장데이터 저장할 배열
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
     // 각 ETF에 대해 월별 적립금액을 반영
     portfolioData.forEach((etf) => {
       // ETF에 대한 초기 투자 금액
@@ -329,6 +340,33 @@ function ETFBacktest() {
       cumulativeInvestment,
       portfolioAnnualizedReturn: portfolioAnnualizedReturn * 100,
     }));
+
+    // 성장 데이터를 상태로 저장 (새로 추가)
+    let currentDate = new Date(start);
+    while (currentDate <= end) {
+      const monthlyPortfolioValue = portfolioData.reduce((total, etf) => {
+        const monthlyGrowthRate = etf.returns / 12 / 100;
+        const etfInitialInvestment = (initialAmount * etf.allocation) / 100;
+        const etfMonthlyInvestment =
+          (monthlyContribution * etf.allocation) / 100;
+        return (
+          total +
+          etfInitialInvestment * (1 + monthlyGrowthRate) +
+          etfMonthlyInvestment * (1 + monthlyGrowthRate)
+        );
+      }, 0);
+
+      console.log(monthlyPortfolioValue);
+
+      growthData.push({
+        date: currentDate.toISOString().slice(0, 7), // YYYY-MM 형식
+        value: monthlyPortfolioValue,
+      });
+
+      currentDate.setMonth(currentDate.getMonth() + 1); // 다음 달로 이동
+    }
+
+    setGrowthData(growthData); // 성장 데이터 상태 업데이트
   }, [portfolioData, result]);
 
   useEffect(() => {
@@ -537,6 +575,7 @@ function ETFBacktest() {
           <button onClick={handleDownloadCSV} className={styles.button}>
             결과 다운로드 (CSV)
           </button>
+          <GrowthChart growthData={growthData} />
           <ETFTable portfolioData={portfolioData} />
           <h3>Annual Returns</h3>
           <AnnualReturnsTable
