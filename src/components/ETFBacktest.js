@@ -6,7 +6,6 @@ import ETFTable from "./ETFTable";
 import styles from "./ETFBacktest.module.css";
 import AnnualReturnsTable from "./AnnualReturnsTable";
 
-
 function ETFBacktest() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -14,6 +13,9 @@ function ETFBacktest() {
   const [errorMessage, setErrorMessage] = useState("");
   const [exchangeRate, setExchangeRate] = useState(1); // 기본 환율
   const [currency, setCurrency] = useState("USD"); 
+
+  const [annualReturns, setAnnualReturns] = useState([]);
+  const [portfolioAnnualReturns, setPortfolioAnnualReturns] = useState([]);
 
   // 환율 정보를 가져오는 함수
   const fetchExchangeRate = async () => {
@@ -90,9 +92,7 @@ function ETFBacktest() {
         groupedReturns[year]
           .map((data, index) => {
             const portfolioReturn = index === 0
-              ? portfolioData
-                  .find((etf) => etf.symbol === data.symbol)
-                  ?.returns.toFixed(2) || "N/A"
+              ? portfolioAnnualReturns.find((p) => p.year === parseInt(year))?.return.toFixed(2) || "N/A"
               : "";
             return `${year},${data.symbol},${data.return.toFixed(2)},${portfolioReturn}`;
           })
@@ -115,11 +115,8 @@ function ETFBacktest() {
     link.click();
     document.body.removeChild(link);
   };
-  
 
-  const [annualReturns, setAnnualReturns] = useState([]);
-
-  /*ETF 데이터를 가져오고 결과를 계산*/
+  /* ETF 데이터를 가져오고 결과를 계산 */
   const handleFormSubmit = async ({ portfolio, startDate, endDate, initialAmount, monthlyContribution }) => {
     setLoading(true);
     setErrorMessage("");
@@ -211,6 +208,25 @@ function ETFBacktest() {
 
       setPortfolioData(fetchedPortfolioData);
       setAnnualReturns(annualReturnsData); // 연도별 데이터 저장
+
+      // 포트폴리오 연간 수익률 계산
+      const portfolioReturnsByYear = {};
+
+      annualReturnsData.forEach(({ year, symbol, return: etfReturn }) => {
+        const etfAllocation = portfolio.find((p) => p.symbol === symbol)?.allocation || 0;
+        if (!portfolioReturnsByYear[year]) {
+          portfolioReturnsByYear[year] = 0;
+        }
+        portfolioReturnsByYear[year] += (etfReturn * etfAllocation) / 100;
+      });
+
+      const portfolioAnnualReturnsArray = Object.keys(portfolioReturnsByYear).map((year) => ({
+        year: parseInt(year),
+        return: portfolioReturnsByYear[year],
+      }));
+
+      setPortfolioAnnualReturns(portfolioAnnualReturnsArray);
+
       setResult({
         startDate,
         endDate,
@@ -275,96 +291,93 @@ function ETFBacktest() {
     }));
   }, [portfolioData, result]);
   
-  
   useEffect(() => {
     calculatePortfolioGrowth();
   }, [portfolioData, result, calculatePortfolioGrowth]);
-  
-
 
   // 표준편차 계산 함수
-const calculateStandardDeviation = (annualReturns) => {
-  if (!annualReturns || annualReturns.length === 0) return null;
-
-  // 연도별 수익률 값 추출
-  const returns = annualReturns.map(({ return: annualReturn }) => annualReturn);
-  const mean = returns.reduce((sum, value) => sum + value, 0) / returns.length;
-  const variance =
-    returns.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) /
-    returns.length;
-
-  // 표준편차 계산
-  return Math.sqrt(variance);
-};
-
-const standardDeviation = calculateStandardDeviation(annualReturns);
-
+  const calculateStandardDeviation = (annualReturns) => {
+    if (!annualReturns || annualReturns.length === 0) return null;
+  
+    // 연도별 수익률 값 추출
+    const returns = annualReturns.map(({ return: annualReturn }) => annualReturn);
+    const mean = returns.reduce((sum, value) => sum + value, 0) / returns.length;
+    const variance =
+      returns.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) /
+      returns.length;
+  
+    // 표준편차 계산
+    return Math.sqrt(variance);
+  };
+  
+  const standardDeviation = calculateStandardDeviation(annualReturns);
 
   // 최고 및 최저 연도 수익률 계산 함수
-const getMaxAndMinReturns = (annualReturns) => {
-  if (!annualReturns || annualReturns.length === 0) return { max: null, min: null };
-
-  let maxReturn = { year: null, symbol: null, value: -Infinity };
-  let minReturn = { year: null, symbol: null, value: Infinity };
-
-  annualReturns.forEach(({ year, symbol, return: annualReturn }) => {
-    if (annualReturn > maxReturn.value) {
-      maxReturn = { year, symbol, value: annualReturn };
-    }
-    if (annualReturn < minReturn.value) {
-      minReturn = { year, symbol, value: annualReturn };
-    }
-  });
-
-  return { max: maxReturn, min: minReturn };
-};
-
-const maxMinReturns = getMaxAndMinReturns(annualReturns);
-
-//샤프비율
-const calculateSharpeRatio = (portfolioReturn, riskFreeRate, standardDeviation) => {
-  if (!standardDeviation || standardDeviation === 0) return null;
-  return (portfolioReturn - riskFreeRate) / standardDeviation;
-};
-//소르티노비율
-const calculateSortinoRatio = (portfolioReturn, riskFreeRate, annualReturns) => {
-  if (!annualReturns || annualReturns.length === 0) return null;
-
-  const downsideReturns = annualReturns
-    .map(({ return: annualReturn }) => Math.min(0, annualReturn))
-    .filter((downside) => downside < 0)
-    .map((downside) => Math.pow(downside, 2));
-
-  if (downsideReturns.length === 0) return null;
-
-  const downsideDeviation = Math.sqrt(
-    downsideReturns.reduce((sum, value) => sum + value, 0) / downsideReturns.length
+  const getMaxAndMinReturns = (annualReturns) => {
+    if (!annualReturns || annualReturns.length === 0) return { max: null, min: null };
+  
+    let maxReturn = { year: null, symbol: null, value: -Infinity };
+    let minReturn = { year: null, symbol: null, value: Infinity };
+  
+    annualReturns.forEach(({ year, symbol, return: annualReturn }) => {
+      if (annualReturn > maxReturn.value) {
+        maxReturn = { year, symbol, value: annualReturn };
+      }
+      if (annualReturn < minReturn.value) {
+        minReturn = { year, symbol, value: annualReturn };
+      }
+    });
+  
+    return { max: maxReturn, min: minReturn };
+  };
+  
+  const maxMinReturns = getMaxAndMinReturns(annualReturns);
+  
+  // 샤프비율 계산 함수
+  const calculateSharpeRatio = (portfolioReturn, riskFreeRate, standardDeviation) => {
+    if (!standardDeviation || standardDeviation === 0) return null;
+    return (portfolioReturn - riskFreeRate) / standardDeviation;
+  };
+  
+  // 소르티노비율 계산 함수
+  const calculateSortinoRatio = (portfolioReturn, riskFreeRate, annualReturns) => {
+    if (!annualReturns || annualReturns.length === 0) return null;
+  
+    const downsideReturns = annualReturns
+      .map(({ return: annualReturn }) => Math.min(0, annualReturn))
+      .filter((downside) => downside < 0)
+      .map((downside) => Math.pow(downside, 2));
+  
+    if (downsideReturns.length === 0) return null;
+  
+    const downsideDeviation = Math.sqrt(
+      downsideReturns.reduce((sum, value) => sum + value, 0) / downsideReturns.length
+    );
+  
+    return downsideDeviation === 0
+      ? null
+      : (portfolioReturn - riskFreeRate) / downsideDeviation;
+  };
+  
+  const riskFreeRate = 2; // 무위험 수익률
+  
+  const sharpeRatio = calculateSharpeRatio(
+    result?.portfolioAnnualizedReturn,
+    riskFreeRate,
+    standardDeviation
+  );
+  
+  const sortinoRatio = calculateSortinoRatio(
+    result?.portfolioAnnualizedReturn,
+    riskFreeRate,
+    annualReturns
   );
 
-  return downsideDeviation === 0
-    ? null
-    : (portfolioReturn - riskFreeRate) / downsideDeviation;
-};
-
-const riskFreeRate = 2; // 무위험 수익률
-
-const sharpeRatio = calculateSharpeRatio(
-  result?.portfolioAnnualizedReturn,
-  riskFreeRate,
-  standardDeviation
-);
-
-const sortinoRatio = calculateSortinoRatio(
-  result?.portfolioAnnualizedReturn,
-  riskFreeRate,
-  annualReturns
-);
-//수익금
-const profit = result
-  ? (result.finalAmount - result.initialAmount) *
-    (currency === "KRW" ? exchangeRate : 1)
-  : null;
-
+  // 수익금 계산
+  const profit = result
+    ? (result.finalAmount - result.initialAmount) *
+      (currency === "KRW" ? exchangeRate : 1)
+    : null;
 
   return (
     <div className="etf-backtest">
@@ -374,21 +387,20 @@ const profit = result
       {errorMessage && <p className="error">{errorMessage}</p>}
       {result && result.totalReturn !== undefined && (
         <div className={styles.results}>
-                <div className="currency-selector">
-        <label>
-          통화:
-          <select
-            value={currency}
-            onChange={(e) => setCurrency(e.target.value)}
-          >
-            <option value="USD">USD (달러)</option>
-            <option value="KRW">KRW (원)</option>
-
-          </select>
-        </label>
-      </div>
+          <div className="currency-selector">
+            <label>
+              통화:
+              <select
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+              >
+                <option value="USD">USD (달러)</option>
+                <option value="KRW">KRW (원)</option>
+              </select>
+            </label>
+          </div>
           <h2>백테스트 결과</h2>
-          <h3>Performance Summary</h3>
+          <h3>성과 요약</h3>
           <table className={styles.resultTable}>
             <thead>
               <tr>
@@ -467,15 +479,11 @@ const profit = result
             결과 다운로드 (CSV)
           </button>
           <ETFTable portfolioData={portfolioData} />
-          <h3>Annual Returns</h3>
+          <h3>연도별 수익률</h3>
           <AnnualReturnsTable
             annualReturns={annualReturns}
-            portfolioReturns={portfolioData.map((etf) => ({
-              year: etf.year,
-              return: etf.returns,
-            }))}
+            portfolioAnnualReturns={portfolioAnnualReturns}
           />
-
         </div>
       )}
     </div>
