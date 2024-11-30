@@ -475,15 +475,19 @@ function ETFBacktest() {
               </tr>
             </tbody>
           </table>
-          <button onClick={handleDownloadCSV} className={styles.button}>
-            결과 다운로드 (CSV)
-          </button>
+          <br></br>
+          <h3>나의 ETF</h3>
           <ETFTable portfolioData={portfolioData} />
+          <br></br>
           <h3>연도별 수익률</h3>
           <AnnualReturnsTable
             annualReturns={annualReturns}
             portfolioAnnualReturns={portfolioAnnualReturns}
           />
+          <br></br>
+          <button onClick={handleDownloadCSV} className={styles.button}>
+            결과 다운로드 (CSV)
+          </button>
         </div>
       )}
     </div>
