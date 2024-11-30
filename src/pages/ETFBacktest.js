@@ -379,24 +379,12 @@ function ETFBacktest() {
         const etfMonthlyInvestment =
           (monthlyContribution * etf.allocation) / 100;
 
-        // console.log(`nextPrice: ${nextPrice} currentPrice: ${currentPrice}`);
-        // console.log(`ETF: ${etf.symbol}, Growth Rate: ${monthlyGrowthRate}`);
-        // console.log(
-        //   `Initial Investment: ${etfInitialInvestment}, Monthly Investment: ${etfMonthlyInvestment}`
-        // );
-
         return (
           total +
           etfInitialInvestment * (1 + monthlyGrowthRate) +
           etfMonthlyInvestment * (1 + monthlyGrowthRate)
         );
       }, 0);
-
-      // console.log(
-      //   `Date: ${currentDate
-      //     .toISOString()
-      //     .slice(0, 7)}, Portfolio Value: ${monthlyPortfolioValue}`
-      // );
 
       growthData.push({
         date: currentDate.toISOString().slice(0, 7), // YYYY-MM 형식
@@ -411,7 +399,7 @@ function ETFBacktest() {
 
   useEffect(() => {
     calculatePortfolioGrowth();
-  }, [portfolioData, result, calculatePortfolioGrowth]);
+  }, [portfolioData]);
 
   // 표준편차 계산 함수
   const calculateStandardDeviation = (annualReturns) => {
