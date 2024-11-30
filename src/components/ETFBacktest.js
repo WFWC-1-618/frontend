@@ -52,7 +52,19 @@ function ETFBacktest() {
   }, []);
 
   const handleDownloadCSV = () => {
-    if (!result || portfolioData.length === 0 || annualReturns.length === 0) return;
+    if (
+      !result ||
+      portfolioData.length === 0 ||
+      annualReturns.length === 0 ||
+      standardDeviation === null ||
+      !maxMinReturns.max ||
+      !maxMinReturns.min ||
+      sharpeRatio === null ||
+      sortinoRatio === null
+    ) {
+      alert("모든 성과 지표가 준비되지 않았습니다.");
+      return;
+    }
   
     const now = new Date();
     const timestamp = now
@@ -64,9 +76,15 @@ function ETFBacktest() {
     // **1. 포트폴리오 요약 정보**
     const summaryHeader = "\uFEFF포트폴리오 요약\n";
     const summaryContent = `총 투자 금액,${result.initialAmount.toFixed(2)} USD\n` +
-      `최종 금액,${result.finalAmount.toFixed(2)} USD\n` +
+      `종료 금액,${result.finalAmount.toFixed(2)} USD\n` +
+      `수익금,${(result.finalAmount - result.initialAmount).toFixed(2)} USD\n` +
       `총 수익률,${result.totalReturn.toFixed(2)} %\n` +
-      `연간 수익률,${result.portfolioAnnualizedReturn.toFixed(2)} %\n`;
+      `연간 수익률,${result.portfolioAnnualizedReturn.toFixed(2)} %\n` +
+      `표준편차,${standardDeviation.toFixed(2)} %\n` +
+      `최고 연도 수익률,${maxMinReturns.max.value.toFixed(2)}% (${maxMinReturns.max.year})\n` +
+      `최저 연도 수익률,${maxMinReturns.min.value.toFixed(2)}% (${maxMinReturns.min.year})\n` +
+      `샤프 비율,${sharpeRatio.toFixed(2)}\n` +
+      `소르티노 비율,${sortinoRatio.toFixed(2)}\n`;
   
     // **2. ETF 데이터**
     const etfHeader = "\n포트폴리오 구성\nETF 심볼,비율 (%),수익률 (%),연간 수익률 (%),초기 금액,최종 금액\n";
@@ -92,7 +110,7 @@ function ETFBacktest() {
         groupedReturns[year]
           .map((data, index) => {
             const portfolioReturn = index === 0
-              ? portfolioAnnualReturns.find((p) => p.year === parseInt(year))?.return.toFixed(2) || "N/A"
+              ? portfolioAnnualReturns.find((p) => p.year === parseInt(year))?.return?.toFixed(2) || "N/A"
               : "";
             return `${year},${data.symbol},${data.return.toFixed(2)},${portfolioReturn}`;
           })
