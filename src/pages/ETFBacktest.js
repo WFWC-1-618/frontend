@@ -284,66 +284,68 @@ function ETFBacktest() {
   const calculatePortfolioGrowth = useCallback(() => {
     if (!result || portfolioData.length === 0) return;
 
-    const { initialAmount, monthlyContribution } = result; // 시작금액(initialAmount) 월 적립 금액(monthlyContribution)을 result 객체에서 가져옴
+    const { initialAmount, monthlyContribution } = result; // 시작 금액과 월 적립 금액
     const start = new Date(startDate); // 시작 날짜
     const end = new Date(endDate); // 종료 날짜
 
     let cumulativeFinalAmount = initialAmount; // 초기 누적 금액
-    const growthData = []; // 성장 데이터를 저장할 배열
+    let cumulativeMonthlyInvestment = 0; // 누적된 월별 적립 금액
+    const growthData = []; // 월별 성장 데이터를 저장할 배열
 
-    let currentDate = new Date(start); // 현재 계산 중인 월
+    let currentDate = new Date(start);
+
     while (currentDate <= end) {
-      console.log(`\n=== ${currentDate.toISOString().slice(0, 7)} ===`);
+      let monthlyPortfolioValue = 0; // 해당 월의 포트폴리오 가치
 
-      // 월별 총 포트폴리오 가치를 계산
-      const monthlyPortfolioValue = portfolioData.reduce((total, etf) => {
-        const currentMonthStr = currentDate.toISOString().slice(0, 7); // YYYY-MM 형식
+      portfolioData.forEach((etf) => {
+        const currentMonthStr = currentDate.toISOString().slice(0, 7);
         const nextDate = new Date(currentDate);
-        nextDate.setMonth(nextDate.getMonth() + 1); // 다음 달로 이동
+        nextDate.setMonth(nextDate.getMonth() + 1);
         const nextMonthStr = nextDate.toISOString().slice(0, 7);
 
-        // ETF의 월별 성장률을 계산
+        // 가격 데이터 가져오기
         const currentPrice = etf.priceData?.[currentMonthStr]?.close || 1;
         const nextPrice = etf.priceData?.[nextMonthStr]?.close || currentPrice;
-        const monthlyGrowthRate = (nextPrice - currentPrice) / currentPrice;
+        const monthlyGrowthRate =
+          currentPrice > 0 ? (nextPrice - currentPrice) / currentPrice : 0;
 
-        // ETF의 초기 투자 금액 및 월 적립 금액 계산
+        // 초기 투자 금액과 월 적립 금액 계산
         const etfInitialInvestment = (initialAmount * etf.allocation) / 100;
         const etfMonthlyInvestment =
           (monthlyContribution * etf.allocation) / 100;
 
-        // ETF의 월별 최종 금액 계산
+        // 누적된 월별 적립 금액 계산
+        cumulativeMonthlyInvestment += etfMonthlyInvestment;
+
+        // 누적된 적립 금액과 초기 투자 금액에 성장률 적용
         const etfMonthlyFinalAmount =
-          etfInitialInvestment * (1 + monthlyGrowthRate) +
-          etfMonthlyInvestment * (1 + monthlyGrowthRate);
+          (etfInitialInvestment + cumulativeMonthlyInvestment) *
+          (1 + monthlyGrowthRate);
+
+        // 해당 월의 ETF 가치 합산
+        monthlyPortfolioValue += etfMonthlyFinalAmount;
 
         console.log(
-          `ETF: ${etf.symbol}, Growth Rate: ${monthlyGrowthRate}, Final Amount: ${etfMonthlyFinalAmount}`
+          `ETF: ${
+            etf.symbol
+          }, Month: ${currentMonthStr}, Growth Rate: ${monthlyGrowthRate.toFixed(
+            4
+          )}, Monthly Final Amount: ${etfMonthlyFinalAmount.toFixed(2)}`
         );
+      });
 
-        return total + etfMonthlyFinalAmount; // 전체 포트폴리오 금액에 누적
-      }, 0);
-
-      console.log(
-        `Final Portfolio Value for ${currentDate
-          .toISOString()
-          .slice(0, 7)}: ${monthlyPortfolioValue}`
-      );
-
-      // 월별 데이터를 성장 데이터 배열에 추가
+      // 월별 성장 데이터를 저장
       growthData.push({
-        date: currentDate.toISOString().slice(0, 7), // YYYY-MM 형식
+        date: currentDate.toISOString().slice(0, 7),
         value: monthlyPortfolioValue,
       });
 
       // 누적 금액 업데이트
       cumulativeFinalAmount = monthlyPortfolioValue;
-
-      // 다음 달로 이동
       currentDate.setMonth(currentDate.getMonth() + 1);
     }
 
-    // 최종 결과 계산
+    // 총 투자 금액 계산 (초기 투자 + 누적된 모든 월 적립 금액)
     const cumulativeInvestment =
       initialAmount +
       portfolioData.reduce(
@@ -355,10 +357,12 @@ function ETFBacktest() {
         0
       );
 
+    // 총 수익률 계산
     const totalReturn =
       ((cumulativeFinalAmount - cumulativeInvestment) / cumulativeInvestment) *
       100;
 
+    // 연환산 수익률 계산
     const durationMonths =
       (end.getFullYear() - start.getFullYear()) * 12 +
       (end.getMonth() - start.getMonth());
@@ -367,7 +371,7 @@ function ETFBacktest() {
     const portfolioAnnualizedReturn =
       Math.pow(cumulativeFinalAmount / initialAmount, 1 / durationYears) - 1;
 
-    // 결과 상태 업데이트
+    // 결과를 상태에 저장
     setResult((prev) => ({
       ...prev,
       totalReturn,
@@ -378,11 +382,11 @@ function ETFBacktest() {
 
     // 성장 데이터를 상태로 저장
     setGrowthData(growthData);
-  }, [portfolioData, result]);
+  }, [portfolioData, result, startDate, endDate]);
 
   useEffect(() => {
     calculatePortfolioGrowth();
-  }, [portfolioData]);
+  }, [portfolioData, result, calculatePortfolioGrowth]);
 
   // 표준편차 계산 함수
   const calculateStandardDeviation = (annualReturns) => {
