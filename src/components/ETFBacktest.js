@@ -18,6 +18,24 @@ function ETFBacktest() {
   const [endDate, setEndDate] = useState(null);
   const [growthData, setGrowthData] = useState([]);
 
+  const [annualReturns, setAnnualReturns] = useState([]);
+  const [portfolioAnnualReturns, setPortfolioAnnualReturns] = useState([]);
+  const [spyAnnualReturns, setSpyAnnualReturns] = useState([]);
+  const [spyData, setSpyData] = useState(null);
+
+  const [standardDeviation, setStandardDeviation] = useState(null);
+  const [maxMinReturns, setMaxMinReturns] = useState({ max: null, min: null });
+  const [sharpeRatio, setSharpeRatio] = useState(null);
+  const [sortinoRatio, setSortinoRatio] = useState(null);
+
+  const [spyStandardDeviation, setSpyStandardDeviation] = useState(null);
+  const [spyMaxMinReturns, setSpyMaxMinReturns] = useState({
+    max: null,
+    min: null,
+  });
+  const [spySharpeRatio, setSpySharpeRatio] = useState(null);
+  const [spySortinoRatio, setSpySortinoRatio] = useState(null);
+
   // 환율 정보를 가져오는 함수
   const fetchExchangeRate = async () => {
     try {
@@ -54,8 +72,19 @@ function ETFBacktest() {
   }, []);
 
   const handleDownloadCSV = () => {
-    if (!result || portfolioData.length === 0 || annualReturns.length === 0)
+    if (
+      !result ||
+      portfolioData.length === 0 ||
+      annualReturns.length === 0 ||
+      standardDeviation === null ||
+      !maxMinReturns.max ||
+      !maxMinReturns.min ||
+      sharpeRatio === null ||
+      sortinoRatio === null
+    ) {
+      alert("모든 성과 지표가 준비되지 않았습니다.");
       return;
+    }
 
     const now = new Date();
     const timestamp = now
@@ -68,9 +97,19 @@ function ETFBacktest() {
     const summaryHeader = "\uFEFF포트폴리오 요약\n";
     const summaryContent =
       `총 투자 금액,${result.initialAmount.toFixed(2)} USD\n` +
-      `최종 금액,${result.finalAmount.toFixed(2)} USD\n` +
+      `종료 금액,${result.finalAmount.toFixed(2)} USD\n` +
+      `수익금,${(result.finalAmount - result.initialAmount).toFixed(2)} USD\n` +
       `총 수익률,${result.totalReturn.toFixed(2)} %\n` +
-      `연간 수익률,${result.portfolioAnnualizedReturn.toFixed(2)} %\n`;
+      `연간 수익률,${result.portfolioAnnualizedReturn.toFixed(2)} %\n` +
+      `표준편차,${standardDeviation.toFixed(2)} %\n` +
+      `최고 연도 수익률,${maxMinReturns.max.value.toFixed(2)}% (${
+        maxMinReturns.max.year
+      })\n` +
+      `최저 연도 수익률,${maxMinReturns.min.value.toFixed(2)}% (${
+        maxMinReturns.min.year
+      })\n` +
+      `샤프 비율,${sharpeRatio.toFixed(2)}\n` +
+      `소르티노 비율,${sortinoRatio.toFixed(2)}\n`;
 
     // **2. ETF 데이터**
     const etfHeader =
@@ -105,9 +144,9 @@ function ETFBacktest() {
           .map((data, index) => {
             const portfolioReturn =
               index === 0
-                ? portfolioData
-                    .find((etf) => etf.symbol === data.symbol)
-                    ?.returns.toFixed(2) || "N/A"
+                ? portfolioAnnualReturns
+                    .find((p) => p.year === parseInt(year))
+                    ?.return?.toFixed(2) || "N/A"
                 : "";
             return `${year},${data.symbol},${data.return.toFixed(
               2
@@ -132,11 +171,8 @@ function ETFBacktest() {
     link.click();
     document.body.removeChild(link);
   };
-  //=========여기까지 CSV파일 다운로드하는 함수=================
 
-  const [annualReturns, setAnnualReturns] = useState([]); //연 수익률
-
-  /*ETF 데이터를 가져오고 결과를 계산*/
+  /* ETF 데이터를 가져오고 결과를 계산 */
   const handleFormSubmit = async ({
     portfolio,
     startDate,
@@ -148,34 +184,54 @@ function ETFBacktest() {
     setErrorMessage("");
     let fetchedPortfolioData = [];
     let annualReturnsData = [];
+    let fetchedSpyData = null;
+    let fetchedSpyAnnualReturns = [];
 
     setStartDate(startDate);
     setEndDate(endDate);
 
     try {
-      //포트폴리오의 모든ETF에 대해 비동기로 API요청보냄
-      const responses = await Promise.allSettled(
-        portfolio.map((etf) =>
-          axios.get("https://alpha-vantage.p.rapidapi.com/query", {
-            params: {
-              function: "TIME_SERIES_MONTHLY_ADJUSTED",
-              symbol: etf.symbol,
-            },
-            headers: {
-              "X-RapidAPI-Key": process.env.REACT_APP_RAPIDAPI_KEY,
-              "X-RapidAPI-Host": process.env.REACT_APP_RAPIDAPI_HOST,
-            },
-          })
-        )
+      // 포트폴리오의 ETF 요청 배열 생성
+      const portfolioRequests = portfolio.map((etf) =>
+        axios.get("https://alpha-vantage.p.rapidapi.com/query", {
+          params: {
+            function: "TIME_SERIES_MONTHLY_ADJUSTED",
+            symbol: etf.symbol,
+          },
+          headers: {
+            "X-RapidAPI-Key": process.env.REACT_APP_RAPIDAPI_KEY,
+            "X-RapidAPI-Host": process.env.REACT_APP_RAPIDAPI_HOST,
+          },
+        })
       );
 
-      //응답 데이터를 처리함
+      // SPY 데이터 요청 추가
+      const spyRequest = axios.get(
+        "https://alpha-vantage.p.rapidapi.com/query",
+        {
+          params: {
+            function: "TIME_SERIES_MONTHLY_ADJUSTED",
+            symbol: "SPY",
+          },
+          headers: {
+            "X-RapidAPI-Key": process.env.REACT_APP_RAPIDAPI_KEY,
+            "X-RapidAPI-Host": process.env.REACT_APP_RAPIDAPI_HOST,
+          },
+        }
+      );
+
+      // 모든 요청을 하나의 배열로 합치기
+      const requests = [...portfolioRequests, spyRequest];
+
+      // 모든 요청을 병렬로 실행
+      const responses = await Promise.allSettled(requests);
+
+      // 응답 처리
       responses.forEach((response, index) => {
         if (response.status === "fulfilled") {
           const priceData = response.value.data["Monthly Adjusted Time Series"];
           if (!priceData) return;
 
-          //날짜 정렬
           const dates = Object.keys(priceData).sort(
             (a, b) => new Date(a) - new Date(b)
           );
@@ -217,18 +273,32 @@ function ETFBacktest() {
             const annualizedReturn =
               Math.pow(endPrice / startPrice, 1 / durationYears) - 1;
 
-            //패치포트폴리오에 push함
-            fetchedPortfolioData.push({
-              symbol: portfolio[index].symbol,
-              allocation: parseFloat(portfolio[index].allocation),
-              startPrice,
-              endPrice,
-              returns: ((endPrice - startPrice) / startPrice) * 100,
-              annualizedReturn: annualizedReturn * 100,
-              priceData: formattedPriceData,
-            });
+            if (index === portfolio.length) {
+              // SPY 데이터 처리
+              fetchedSpyData = {
+                startPrice,
+                endPrice,
+                returns: ((endPrice - startPrice) / startPrice) * 100,
+                annualizedReturn: annualizedReturn * 100,
+                initialAmount: parseFloat(initialAmount),
+                finalAmount:
+                  parseFloat(initialAmount) *
+                  (1 + (endPrice - startPrice) / startPrice),
+              };
+            } else {
+              // 포트폴리오 ETF 데이터 처리
+              if (!portfolio[index]) return;
+              fetchedPortfolioData.push({
+                symbol: portfolio[index].symbol,
+                allocation: parseFloat(portfolio[index].allocation),
+                startPrice,
+                endPrice,
+                returns: ((endPrice - startPrice) / startPrice) * 100,
+                annualizedReturn: annualizedReturn * 100,
+              });
+            }
 
-            // 연도별 수익률을 계산함
+            // 연도별 수익률 계산
             const yearReturns = {};
             dates.forEach((date) => {
               const year = new Date(date).getFullYear();
@@ -250,12 +320,24 @@ function ETFBacktest() {
                 const startYearPrice = yearData.returns[0];
                 const endYearPrice =
                   yearData.returns[yearData.returns.length - 1];
-                annualReturnsData.push({
-                  year: yearData.year,
-                  symbol: portfolio[index].symbol,
-                  return:
-                    ((endYearPrice - startYearPrice) / startYearPrice) * 100,
-                });
+                const annualReturn =
+                  ((endYearPrice - startYearPrice) / startYearPrice) * 100;
+
+                if (index === portfolio.length) {
+                  // SPY의 연도별 수익률을 fetchedSpyAnnualReturns에 저장
+                  fetchedSpyAnnualReturns.push({
+                    year: yearData.year,
+                    symbol: "SPY",
+                    return: annualReturn,
+                  });
+                } else {
+                  // 포트폴리오 ETF의 연도별 수익률을 annualReturnsData에 저장
+                  annualReturnsData.push({
+                    year: yearData.year,
+                    symbol: portfolio[index].symbol,
+                    return: annualReturn,
+                  });
+                }
               }
             });
           }
@@ -265,8 +347,30 @@ function ETFBacktest() {
       //fetchedPortfolioData : 각 ETF의 수익률 및 연평균 수익률 데이터
       setPortfolioData(fetchedPortfolioData);
       setAnnualReturns(annualReturnsData); // 연도별 데이터 저장
+      setSpyAnnualReturns(fetchedSpyAnnualReturns); // SPY 연도별 데이터 저장
+      setSpyData(fetchedSpyData);
 
-      //입력값 및 결과를 상태로 저장
+      // 포트폴리오 연간 수익률 계산
+      const portfolioReturnsByYear = {};
+
+      annualReturnsData.forEach(({ year, symbol, return: etfReturn }) => {
+        const etfAllocation =
+          portfolio.find((p) => p.symbol === symbol)?.allocation || 0;
+        if (!portfolioReturnsByYear[year]) {
+          portfolioReturnsByYear[year] = 0;
+        }
+        portfolioReturnsByYear[year] += (etfReturn * etfAllocation) / 100;
+      });
+
+      const portfolioAnnualReturnsArray = Object.keys(
+        portfolioReturnsByYear
+      ).map((year) => ({
+        year: parseInt(year),
+        return: portfolioReturnsByYear[year],
+      }));
+
+      setPortfolioAnnualReturns(portfolioAnnualReturnsArray);
+
       setResult({
         startDate,
         endDate,
@@ -274,7 +378,7 @@ function ETFBacktest() {
         monthlyContribution: parseFloat(monthlyContribution),
       });
     } catch (error) {
-      setErrorMessage(`Error fetching data: ${error.message}`);
+      setErrorMessage(`데이터를 가져오는 중 오류 발생: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -388,35 +492,86 @@ function ETFBacktest() {
     calculatePortfolioGrowth();
   }, [portfolioData, result, calculatePortfolioGrowth]);
 
-  // 표준편차 계산 함수
-  const calculateStandardDeviation = (annualReturns) => {
-    if (!annualReturns || annualReturns.length === 0) return null;
+  // 포트폴리오 성과 지표 계산
+  useEffect(() => {
+    if (portfolioAnnualReturns.length > 0) {
+      const stdDev = calculateStandardDeviation(portfolioAnnualReturns);
+      setStandardDeviation(stdDev);
 
-    // 연도별 수익률 값 추출
-    const returns = annualReturns.map(
-      ({ return: annualReturn }) => annualReturn
+      const maxMin = getMaxAndMinReturns(portfolioAnnualReturns);
+      setMaxMinReturns(maxMin);
+
+      const sharpe = calculateSharpeRatio(
+        result?.portfolioAnnualizedReturn,
+        riskFreeRate,
+        stdDev
+      );
+      setSharpeRatio(sharpe);
+
+      const sortino = calculateSortinoRatio(
+        result?.portfolioAnnualizedReturn,
+        riskFreeRate,
+        portfolioAnnualReturns
+      );
+      setSortinoRatio(sortino);
+    }
+  }, [portfolioAnnualReturns, result]);
+
+  // SPY 성과 지표 계산
+  useEffect(() => {
+    if (spyAnnualReturns.length > 0 && spyData) {
+      const stdDev = calculateStandardDeviation(spyAnnualReturns);
+      setSpyStandardDeviation(stdDev);
+
+      const maxMin = getMaxAndMinReturns(spyAnnualReturns);
+      setSpyMaxMinReturns(maxMin);
+
+      const sharpe = calculateSharpeRatio(
+        spyData?.annualizedReturn,
+        riskFreeRate,
+        stdDev
+      );
+      setSpySharpeRatio(sharpe);
+
+      const sortino = calculateSortinoRatio(
+        spyData?.annualizedReturn,
+        riskFreeRate,
+        spyAnnualReturns
+      );
+      setSpySortinoRatio(sortino);
+    }
+  }, [spyAnnualReturns, spyData]);
+
+  // 표준편차 계산 함수
+  const calculateStandardDeviation = (returnsArray) => {
+    if (!returnsArray || returnsArray.length === 0) return null;
+
+    // 수익률을 소수(decimal)로 변환
+    const returnsInDecimal = returnsArray.map(
+      ({ return: annualReturn }) => annualReturn / 100
     );
     const mean =
-      returns.reduce((sum, value) => sum + value, 0) / returns.length;
+      returnsInDecimal.reduce((sum, value) => sum + value, 0) /
+      returnsInDecimal.length;
     const variance =
-      returns.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) /
-      returns.length;
+      returnsInDecimal.reduce(
+        (sum, value) => sum + Math.pow(value - mean, 2),
+        0
+      ) / returnsInDecimal.length;
 
-    // 표준편차 계산
-    return Math.sqrt(variance);
+    // 표준편차 계산 후 퍼센트(%)로 변환
+    return Math.sqrt(variance) * 100;
   };
 
-  const standardDeviation = calculateStandardDeviation(annualReturns);
-
   // 최고 및 최저 연도 수익률 계산 함수
-  const getMaxAndMinReturns = (annualReturns) => {
-    if (!annualReturns || annualReturns.length === 0)
+  const getMaxAndMinReturns = (returnsArray) => {
+    if (!returnsArray || returnsArray.length === 0)
       return { max: null, min: null };
 
     let maxReturn = { year: null, symbol: null, value: -Infinity };
     let minReturn = { year: null, symbol: null, value: Infinity };
 
-    annualReturns.forEach(({ year, symbol, return: annualReturn }) => {
+    returnsArray.forEach(({ year, symbol, return: annualReturn }) => {
       if (annualReturn > maxReturn.value) {
         maxReturn = { year, symbol, value: annualReturn };
       }
@@ -428,56 +583,46 @@ function ETFBacktest() {
     return { max: maxReturn, min: minReturn };
   };
 
-  const maxMinReturns = getMaxAndMinReturns(annualReturns);
-
-  //샤프비율
+  // 샤프비율 계산 함수
   const calculateSharpeRatio = (
     portfolioReturn,
     riskFreeRate,
     standardDeviation
   ) => {
     if (!standardDeviation || standardDeviation === 0) return null;
-    return (portfolioReturn - riskFreeRate) / standardDeviation;
+
+    const portfolioReturnDecimal = portfolioReturn / 100;
+    const riskFreeRateDecimal = riskFreeRate / 100;
+    const standardDeviationDecimal = standardDeviation / 100;
+
+    return (
+      (portfolioReturnDecimal - riskFreeRateDecimal) / standardDeviationDecimal
+    );
   };
-  //소르티노비율
+  const riskFreeRate = 2; // 무위험 수익률
+
+  // 소르티노비율 계산 함수
   const calculateSortinoRatio = (
     portfolioReturn,
     riskFreeRate,
     annualReturns
   ) => {
     if (!annualReturns || annualReturns.length === 0) return null;
-
     const downsideReturns = annualReturns
       .map(({ return: annualReturn }) => Math.min(0, annualReturn))
       .filter((downside) => downside < 0)
       .map((downside) => Math.pow(downside, 2));
-
     if (downsideReturns.length === 0) return null;
-
     const downsideDeviation = Math.sqrt(
       downsideReturns.reduce((sum, value) => sum + value, 0) /
         downsideReturns.length
     );
-
     return downsideDeviation === 0
       ? null
       : (portfolioReturn - riskFreeRate) / downsideDeviation;
   };
 
-  const riskFreeRate = 2; // 무위험 수익률
-
-  const sharpeRatio = calculateSharpeRatio(
-    result?.portfolioAnnualizedReturn,
-    riskFreeRate,
-    standardDeviation
-  );
-
-  const sortinoRatio = calculateSortinoRatio(
-    result?.portfolioAnnualizedReturn,
-    riskFreeRate,
-    annualReturns
-  );
-  //수익금
+  // 수익금 계산
   const profit = result
     ? (result.finalAmount - result.initialAmount) *
       (currency === "KRW" ? exchangeRate : 1)
@@ -504,12 +649,13 @@ function ETFBacktest() {
             </label>
           </div>
           <h2>백테스트 결과</h2>
-          <h3>Performance Summary</h3>
+          <h3>성과 요약</h3>
           <table className={styles.resultTable}>
             <thead>
               <tr>
                 <th>값</th>
                 <th>샘플 포트폴리오</th>
+                <th>SPDR S&P 500 ETF Trust</th>
               </tr>
             </thead>
             <tbody>
@@ -522,6 +668,15 @@ function ETFBacktest() {
                       ).toLocaleString()} 원`
                     : `${result.initialAmount.toLocaleString()} USD`}
                 </td>
+                <td>
+                  {spyData
+                    ? currency === "KRW"
+                      ? `${(
+                          spyData.initialAmount * exchangeRate
+                        ).toLocaleString()} 원`
+                      : `${spyData.initialAmount.toLocaleString()} USD`
+                    : "N/A"}
+                </td>
               </tr>
               <tr>
                 <td>종료 잔액</td>
@@ -531,6 +686,15 @@ function ETFBacktest() {
                         result.finalAmount * exchangeRate
                       ).toLocaleString()} 원`
                     : `${result.finalAmount.toLocaleString()} USD`}
+                </td>
+                <td>
+                  {spyData
+                    ? currency === "KRW"
+                      ? `${(
+                          spyData.finalAmount * exchangeRate
+                        ).toLocaleString()} 원`
+                      : `${spyData.finalAmount.toLocaleString()} USD`
+                    : "N/A"}
                 </td>
               </tr>
               <tr>
@@ -542,20 +706,41 @@ function ETFBacktest() {
                       }`
                     : "N/A"}
                 </td>
+                <td>
+                  {spyData
+                    ? currency === "KRW"
+                      ? `${(
+                          (spyData.finalAmount - spyData.initialAmount) *
+                          exchangeRate
+                        ).toLocaleString()} 원`
+                      : `${(
+                          spyData.finalAmount - spyData.initialAmount
+                        ).toLocaleString()} USD`
+                    : "N/A"}
+                </td>
               </tr>
               <tr>
                 <td>총 수익률</td>
                 <td>{`${result.totalReturn.toFixed(2)}%`}</td>
+                <td>{spyData ? `${spyData.returns.toFixed(2)}%` : "N/A"}</td>
               </tr>
               <tr>
                 <td>연간 수익률</td>
                 <td>{`${result.portfolioAnnualizedReturn.toFixed(2)}%`}</td>
+                <td>
+                  {spyData ? `${spyData.annualizedReturn.toFixed(2)}%` : "N/A"}
+                </td>
               </tr>
               <tr>
                 <td>표준편차</td>
                 <td>
                   {standardDeviation !== null
                     ? `${standardDeviation.toFixed(2)}%`
+                    : "N/A"}
+                </td>
+                <td>
+                  {spyStandardDeviation !== null
+                    ? `${spyStandardDeviation.toFixed(2)}%`
                     : "N/A"}
                 </td>
               </tr>
@@ -566,6 +751,11 @@ function ETFBacktest() {
                     ? `${maxMinReturns.max.value.toFixed(2)}%`
                     : "N/A"}
                 </td>
+                <td>
+                  {spyMaxMinReturns.max
+                    ? `${spyMaxMinReturns.max.value.toFixed(2)}%`
+                    : "N/A"}
+                </td>
               </tr>
               <tr>
                 <td>최저 연도 수익률</td>
@@ -574,19 +764,42 @@ function ETFBacktest() {
                     ? `${maxMinReturns.min.value.toFixed(2)}%`
                     : "N/A"}
                 </td>
+                <td>
+                  {spyMaxMinReturns.min
+                    ? `${spyMaxMinReturns.min.value.toFixed(2)}%`
+                    : "N/A"}
+                </td>
               </tr>
               <tr>
                 <td>샤프 비율</td>
                 <td>{sharpeRatio !== null ? sharpeRatio.toFixed(2) : "N/A"}</td>
+                <td>
+                  {spySharpeRatio !== null ? spySharpeRatio.toFixed(2) : "N/A"}
+                </td>
               </tr>
               <tr>
                 <td>소르티노 비율</td>
                 <td>
                   {sortinoRatio !== null ? sortinoRatio.toFixed(2) : "N/A"}
                 </td>
+                <td>
+                  {spySortinoRatio !== null
+                    ? spySortinoRatio.toFixed(2)
+                    : "N/A"}
+                </td>
               </tr>
             </tbody>
           </table>
+          <br></br>
+          <h3>나의 ETF</h3>
+          <ETFTable portfolioData={portfolioData} />
+          <br></br>
+          <h3>연도별 수익률</h3>
+          <AnnualReturnsTable
+            annualReturns={annualReturns}
+            portfolioAnnualReturns={portfolioAnnualReturns}
+          />
+          <br></br>
           <button onClick={handleDownloadCSV} className={styles.button}>
             결과 다운로드 (CSV)
           </button>
