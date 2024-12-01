@@ -236,6 +236,7 @@ function ETFBacktest() {
             (a, b) => new Date(a) - new Date(b)
           );
 
+          //월별 종가 데이터 저장
           const formattedPriceData = dates.reduce((acc, date) => {
             const monthkey = date.slice(0, 7);
             acc[monthkey] = {
@@ -284,6 +285,7 @@ function ETFBacktest() {
                 finalAmount:
                   parseFloat(initialAmount) *
                   (1 + (endPrice - startPrice) / startPrice),
+                priceData: formattedPriceData, //월별 SPY종가를 저장
               };
             } else {
               // 포트폴리오 ETF 데이터 처리
@@ -295,7 +297,7 @@ function ETFBacktest() {
                 endPrice,
                 returns: ((endPrice - startPrice) / startPrice) * 100,
                 annualizedReturn: annualizedReturn * 100,
-                priceData: formattedPriceData,
+                priceData: formattedPriceData, //월별 샘플 포트폴리오 종가를 저장
               });
             }
 
