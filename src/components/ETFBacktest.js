@@ -858,8 +858,8 @@ function ETFBacktest() {
           <button onClick={handleDownloadCSV} className={styles.button}>
             결과 다운로드 (CSV)
           </button>
+          <h3>포트폴리오 성장</h3>
           <GrowthChart growthData={growthData} spyGrowthData={spyGrowthData} />
-          <ETFTable portfolioData={portfolioData} />
         </div>
       )}
     </div>
