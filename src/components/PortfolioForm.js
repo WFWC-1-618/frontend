@@ -221,19 +221,17 @@ function PortfolioForm({ onSubmit }) {
       <button type="submit" className={styles.button} disabled={!isFormValid()}>
         백테스트 실행
       </button>
-      <div className={styles.chartContainer2}>
-        {/* GrowthChart 위 */}
+      {/* <div className={styles.chartContainer2}>
         <div className={styles.chartBox}>
           <h3 className={styles.chartTitle}>포트폴리오 성장</h3>
-          <GrowthChart startDate={startDate} endDate={endDate} />
+          <GrowthChart startDate={startDate} endDate={endDate} />{" "}
         </div>
 
-        {/* AnnualReturnsChart 아래 */}
         <div className={styles.chartBox}>
           <h3 className={styles.chartTitle}>연간 수익률</h3>
           <AnnualReturnsChart startDate={startDate} endDate={endDate} />
         </div>
-      </div>
+      </div> */}
     </form>
   );
 }
