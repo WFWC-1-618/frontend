@@ -520,6 +520,58 @@ function ETFBacktest() {
     }
   }, [portfolioAnnualReturns, result]);
 
+  const [spyGrowthData, setSpyGrowthData] = useState([]);
+
+  //SPY 성장세 계산
+  const calculateSPYGrowth = useCallback(() => {
+    if (!spyData || !spyData.priceData) return;
+
+    const { initialAmount } = spyData; // SPY의 초기 투자 금액
+    const start = new Date(startDate); // 시작 날짜
+    const end = new Date(endDate); // 종료 날짜
+
+    let spyValue = initialAmount; // 초기 SPY 가치
+    const spyGrowthData = []; // SPY의 월별 성장 데이터를 저장할 배열
+
+    let currentDate = new Date(start);
+
+    while (currentDate <= end) {
+      const currentMonthStr = currentDate.toISOString().slice(0, 7);
+      const nextDate = new Date(currentDate);
+      nextDate.setMonth(nextDate.getMonth() + 1);
+      const nextMonthStr = nextDate.toISOString().slice(0, 7);
+
+      // SPY의 현재 및 다음 달 가격 데이터
+      const currentPrice = spyData.priceData?.[currentMonthStr]?.close || 1;
+      const nextPrice =
+        spyData.priceData?.[nextMonthStr]?.close || currentPrice;
+
+      // 월별 성장률 계산
+      const monthlyGrowthRate =
+        currentPrice > 0 ? (nextPrice - currentPrice) / currentPrice : 0;
+
+      // SPY 가치에 성장률 적용
+      spyValue = spyValue * (1 + monthlyGrowthRate);
+
+      // 월별 SPY 성장 데이터를 저장
+      spyGrowthData.push({
+        date: currentDate.toISOString().slice(0, 7),
+        value: spyValue,
+      });
+
+      currentDate.setMonth(currentDate.getMonth() + 1); // 다음 달로 이동
+    }
+
+    return spyGrowthData;
+  }, [spyData, startDate, endDate]);
+
+  useEffect(() => {
+    const growth = calculateSPYGrowth();
+    if (growth) {
+      setSpyGrowthData(growth);
+    }
+  }, [calculateSPYGrowth]);
+
   // SPY 성과 지표 계산
   useEffect(() => {
     if (spyAnnualReturns.length > 0 && spyData) {
@@ -806,7 +858,7 @@ function ETFBacktest() {
           <button onClick={handleDownloadCSV} className={styles.button}>
             결과 다운로드 (CSV)
           </button>
-          <GrowthChart growthData={growthData} />
+          <GrowthChart growthData={growthData} spyGrowthData={spyGrowthData} />
           <ETFTable portfolioData={portfolioData} />
           <h3>Annual Returns</h3>
           <AnnualReturnsTable
