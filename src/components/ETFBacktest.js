@@ -295,6 +295,7 @@ function ETFBacktest() {
                 endPrice,
                 returns: ((endPrice - startPrice) / startPrice) * 100,
                 annualizedReturn: annualizedReturn * 100,
+                priceData: formattedPriceData,
               });
             }
 
