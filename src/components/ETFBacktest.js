@@ -856,11 +856,13 @@ function ETFBacktest() {
             portfolioAnnualReturns={portfolioAnnualReturns}
           />
           <br></br>
+
+          <h3>포트폴리오 성장</h3>
+          <GrowthChart growthData={growthData} spyGrowthData={spyGrowthData} />
+          <br></br>
           <button onClick={handleDownloadCSV} className={styles.button}>
             결과 다운로드 (CSV)
           </button>
-          <h3>포트폴리오 성장</h3>
-          <GrowthChart growthData={growthData} spyGrowthData={spyGrowthData} />
         </div>
       )}
     </div>
