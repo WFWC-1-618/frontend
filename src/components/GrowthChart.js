@@ -12,7 +12,7 @@ function GrowthChart({ growthData, spyGrowthData }) {
         fill: false,
       },
       {
-        label: "SPY",
+        label: "SPDR S&P 500 ETF Trust",
         data: spyGrowthData.map((point) => point.value),
         borderColor: "red",
         fill: false,
